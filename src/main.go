@@ -5,63 +5,78 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
 // Autoload environment variables in .env
 import _ "github.com/joho/godotenv/autoload"
 
-var x = 0
+var x = -1
 
 func chatbotProcess(session chatbot.Session, message string) (string, error) {
 
 	var key string
 	if strings.EqualFold(message, "add") {
-		x = 1
+		x = 0
 		key = "event"
 		session[key] = []string{}
 	}
 
+	if strings.EqualFold(message, "again") {
+		x = -1
+		return fmt.Sprintf("%s", "If you want to add events, type 'add'!"), nil
+	}
+
 	if strings.EqualFold(message, "done") {
-		words := session["titles"]
-		l := len(words)
-		wordsForSentence := make([]string, l)
-		copy(wordsForSentence, words)
-		if l > 1 {
-			wordsForSentence[l-1] = "and " + wordsForSentence[l-1]
-		}
-		if l == 0 {
-			return fmt.Sprintf("%s", "If you want to add events, type 'add'!"), nil
-		}
-		sentence := strings.Join(wordsForSentence, ", ")
-		x = 8
-		return fmt.Sprintf("You added %s! If you want to add other events, type 'add'! ", strings.ToLower(sentence)), nil
+		x = -1
+		return fmt.Sprintf("%s", "If you want to add events, type 'add'!"), nil
+
 	}
 
 	switch x {
-	case 1:
-		x = 2
+	case 0:
+		x = 1
 		return fmt.Sprintf("%s", "Please enter the title of the event"), nil
+	case 1:
+		session[key] = append(session[key], message)
+		x = 2
+		return fmt.Sprintf("%s", "Please enter the description of the event"), nil
 	case 2:
 		session[key] = append(session[key], message)
 		x = 3
-		return fmt.Sprintf("%s", "Please enter the date of the event"), nil
+		return fmt.Sprintf("%s", "Please enter the start dateTime of the event"), nil
 	case 3:
 		session[key] = append(session[key], message)
 		x = 4
-		return fmt.Sprintf("%s", "Please enter the timing of the event"), nil
+		return fmt.Sprintf("%s", "Please enter the end dateTime of the event"), nil
 	case 4:
 		session[key] = append(session[key], message)
 		x = 5
-		return fmt.Sprintf("%s", "Please enter the longitude of the event"), nil
+		return fmt.Sprintf("%s", "Please enter the location of the event"), nil
 	case 5:
 		session[key] = append(session[key], message)
 		x = 6
-		return fmt.Sprintf("%s", "Please enter the latitude of the event"), nil
+		return fmt.Sprintf("%s", "Please enter the organizer email of the event"), nil
 	case 6:
 		session[key] = append(session[key], message)
+		x = 7
+		return fmt.Sprintf("%s", "Please enter the attendees email of the event and split the emails with - "), nil
+	case 7:
+		session[key] = append(session[key], message)
+		x = 8
+		return fmt.Sprintf("%s", "Please choose a calendar to add the event to it"), nil
+	case 8:
+		session[key] = append(session[key], message)
 		var eventArray = session[key]
-		var event = "Title: " + eventArray[0] + " ,Date: " + eventArray[1] + " ,Time: " + eventArray[2] + " ,Location(longitude: " + eventArray[3] + " , latitude: " + eventArray[4] + " )"
+		var attendeesEmails = strings.Split(eventArray[6], "-")
+		var attendees = " "
+
+		for i, v := range attendeesEmails {
+			attendees += " " + strconv.Itoa(i+1) + "- " + v + " "
+		}
+
+		var event = "Title: " + eventArray[0] + " , Description: " + eventArray[1] + " ,Start DateTime: " + eventArray[2] + " , End DateTime: " + eventArray[3] + " ,Location: " + eventArray[4] + " , Organizer email: " + eventArray[5] + " , Attendees emails: " + attendees + " , Calender type: " + eventArray[7]
 
 		return fmt.Sprintf("So your event is " + event + " . Either type done to add it or type again to re-add it ."), nil
 		// return fmt.Sprintf("%s", "This event is done! Either type 'add' or 'done'!"), nil
