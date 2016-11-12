@@ -1,4 +1,4 @@
-package main
+package calendarAuth
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-"google.golang.org/api/calendar/v3"
+	"google.golang.org/api/calendar/v3"
 )
 
 // getClient uses a Context and Config to retrieve a Token
@@ -89,7 +89,7 @@ func saveToken(file string, token *oauth2.Token) {
 	json.NewEncoder(f).Encode(token)
 }
 
-func main() {
+func getCalendarService() (calendar.Service, error) {
 	ctx := context.Background()
 
 	b, err := ioutil.ReadFile("client_secret.json")
@@ -106,57 +106,78 @@ func main() {
 	client := getClient(ctx, config)
 
 	srv, err := calendar.New(client)
-	if err != nil {
-		log.Fatalf("Unable to retrieve calendar Client %v", err)
-	}
-	/*
-		t := time.Now().Format(time.RFC3339)
-		fmt.Println(t+"")
-		events, err := srv.Events.List("primary").ShowDeleted(false).
-			SingleEvents(true).TimeMin(t).MaxResults(10).OrderBy("startTime").Do()
-		if err != nil {
-			log.Fatalf("Unable to retrieve next ten of the user's events. %v", err)
-		}
 
-		fmt.Println("Upcoming events:")
-		if len(events.Items) > 0 {
-			for _, i := range events.Items {
-				var when string
-				// If the DateTime is an empty string the Event is an all-day Event.
-				// So only Date is available.
-				if i.Start.DateTime != "" {
-					when = i.Start.DateTime
-				} else {
-					when = i.Start.Date
-				}
-				fmt.Printf("%s (%s)\n", i.Summary, when)
-			}
-		} else {
-			fmt.Printf("No upcoming events found.\n")
-		}
-
-	*/
-	listRes, err := srv.CalendarList.List().Fields("items/id").Do()
-	if err != nil {
-		log.Fatalf("Unable to retrieve list of calendars: %v", err)
-	}
-	for _, v := range listRes.Items {
-		log.Printf("Calendar ID: %v and description: %d \n", v.Id)
-	}
-
-	log.Println("------------------------------------------ ")
-
-	if len(listRes.Items) > 0 {
-		id := listRes.Items[2].Id
-		res, err := srv.Events.List(id).Fields("items(updated,summary)", "summary", "nextPageToken").Do()
-		if err != nil {
-			log.Fatalf("Unable to retrieve calendar events list: %v", err)
-		}
-		for _, v := range res.Items {
-			log.Printf("Calendar ID %q event: %v: %q\n", id, v.Updated, v.Summary)
-		}
-		log.Printf("Calendar ID %q Summary: %v\n", id, res.Summary)
-		log.Printf("Calendar ID %q next page token: %v\n", id, res.NextPageToken)
-	}
+	return *srv, err
 
 }
+
+// func main() {
+// 	ctx := context.Background()
+
+// 	b, err := ioutil.ReadFile("client_secret.json")
+// 	if err != nil {
+// 		log.Fatalf("Unable to read client secret file: %v", err)
+// 	}
+
+// 	// If modifying these scopes, delete your previously saved credentials
+// 	// at ~/.credentials/calendar-go-quickstart.json
+// 	config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
+// 	if err != nil {
+// 		log.Fatalf("Unable to parse client secret file to config: %v", err)
+// 	}
+// 	client := getClient(ctx, config)
+
+// 	srv, err := calendar.New(client)
+// 	if err != nil {
+// 		log.Fatalf("Unable to retrieve calendar Client %v", err)
+// 	}
+
+// 	t := time.Now().Format(time.RFC3339)
+// 	fmt.Println(t + "")
+// 	events, err := srv.Events.List("primary").ShowDeleted(false).
+// 		SingleEvents(true).TimeMin(t).MaxResults(10).OrderBy("startTime").Do()
+// 	if err != nil {
+// 		log.Fatalf("Unable to retrieve next ten of the user's events. %v", err)
+// 	}
+
+// 	fmt.Println("Upcoming events:")
+// 	if len(events.Items) > 0 {
+// 		for _, i := range events.Items {
+// 			var when string
+// 			// If the DateTime is an empty string the Event is an all-day Event.
+// 			// So only Date is available.
+// 			if i.Start.DateTime != "" {
+// 				when = i.Start.DateTime
+// 			} else {
+// 				when = i.Start.Date
+// 			}
+// 			fmt.Printf("%s (%s)\n", i.Summary, when)
+// 		}
+// 	} else {
+// 		fmt.Printf("No upcoming events found.\n")
+// 	}
+
+// 	listRes, err := srv.CalendarList.List().Fields("items/id").Do()
+// 	if err != nil {
+// 		log.Fatalf("Unable to retrieve list of calendars: %v", err)
+// 	}
+// 	for _, v := range listRes.Items {
+// 		log.Printf("Calendar ID: %v and description: %d \n", v.Id)
+// 	}
+
+// 	log.Println("------------------------------------------ ")
+
+// 	if len(listRes.Items) > 0 {
+// 		id := listRes.Items[2].Id
+// 		res, err := srv.Events.List(id).Fields("items(updated,summary)", "summary", "nextPageToken").Do()
+// 		if err != nil {
+// 			log.Fatalf("Unable to retrieve calendar events list: %v", err)
+// 		}
+// 		for _, v := range res.Items {
+// 			log.Printf("Calendar ID %q event: %v: %q\n", id, v.Updated, v.Summary)
+// 		}
+// 		log.Printf("Calendar ID %q Summary: %v\n", id, res.Summary)
+// 		log.Printf("Calendar ID %q next page token: %v\n", id, res.NextPageToken)
+// 	}
+
+// }
