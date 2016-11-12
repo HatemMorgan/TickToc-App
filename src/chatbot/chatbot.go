@@ -148,11 +148,11 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	// Make sure a history key is defined in the session which points to a slice of strings
-	_, historyFound := session["history"]
-	if !historyFound {
-		session["history"] = []string{}
-	}
+	// Make sure that the count session is Available in order to allow adding more than one event
+	// _, countFound := session["count"]
+	// if !countFound {
+	// 	session["count"] = []string{"1"}
+	// }
 
 	// Make sure a message key is defined in the body of the request
 	_, messageFound := data["message"]

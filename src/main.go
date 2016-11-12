@@ -11,11 +11,15 @@ import (
 // Autoload environment variables in .env
 import _ "github.com/joho/godotenv/autoload"
 
-var x = 8
+var x = 0
 
 func chatbotProcess(session chatbot.Session, message string) (string, error) {
+
+	var key string
 	if strings.EqualFold(message, "add") {
 		x = 1
+		key = "event"
+		session[key] = []string{}
 	}
 
 	if strings.EqualFold(message, "done") {
@@ -39,24 +43,28 @@ func chatbotProcess(session chatbot.Session, message string) (string, error) {
 		x = 2
 		return fmt.Sprintf("%s", "Please enter the title of the event"), nil
 	case 2:
-		session["titles"] = append(session["titles"], message)
+		session[key] = append(session[key], message)
 		x = 3
 		return fmt.Sprintf("%s", "Please enter the date of the event"), nil
 	case 3:
-		session["dates"] = append(session["date"], message)
+		session[key] = append(session[key], message)
 		x = 4
 		return fmt.Sprintf("%s", "Please enter the timing of the event"), nil
 	case 4:
-		session["timing"] = append(session["timings"], message)
+		session[key] = append(session[key], message)
 		x = 5
 		return fmt.Sprintf("%s", "Please enter the longitude of the event"), nil
 	case 5:
-		session["longitudes"] = append(session["longitudes"], message)
+		session[key] = append(session[key], message)
 		x = 6
 		return fmt.Sprintf("%s", "Please enter the latitude of the event"), nil
 	case 6:
-		session["latitudes"] = append(session["latitudes"], message)
-		return fmt.Sprintf("%s", "This event is done! Either type 'add' or 'done'!"), nil
+		session[key] = append(session[key], message)
+		var eventArray = session[key]
+		var event = "Title: " + eventArray[0] + " ,Date: " + eventArray[1] + " ,Time: " + eventArray[2] + " ,Location(longitude: " + eventArray[3] + " , latitude: " + eventArray[4] + " )"
+
+		return fmt.Sprintf("So your event is " + event + " . Either type done to add it or type again to re-add it ."), nil
+		// return fmt.Sprintf("%s", "This event is done! Either type 'add' or 'done'!"), nil
 
 	default:
 		return "", fmt.Errorf("%s", "Invalid text!")
