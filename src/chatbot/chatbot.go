@@ -37,7 +37,7 @@ var (
 
 type (
 	// Session Holds info about a session
-	Session map[string][]string
+	Session map[string]string
 
 	// JSON Holds a JSON object
 	JSON map[string]interface{}
@@ -47,27 +47,27 @@ type (
 )
 
 func defaultProcessor(session Session, message string) (string, error) {
-	// Make sure the message is unique in history
-	for _, m := range session["history"] {
-		if strings.EqualFold(m, message) {
-			return "", fmt.Errorf("You've already ordered %s before!", message)
-		}
-	}
+	// // Make sure the message is unique in history
+	// for _, m := range session["history"] {
+	// 	if strings.EqualFold(m, message) {
+	// 		return "", fmt.Errorf("You've already ordered %s before!", message)
+	// 	}
+	// }
 
-	// Add the message in the parsed body to the messages in the session
-	session["history"] = append(session["history"], message)
+	// // Add the message in the parsed body to the messages in the session
+	// session["history"] = append(session["history"], message)
 
-	// Form a sentence out of the history in the form Message 1, Message 2, and Message 3
-	words := session["history"]
-	lenght := len(words)
-	wordsForSentence := make([]string, lenght)
-	copy(wordsForSentence, words)
-	if lenght > 1 {
-		wordsForSentence[lenght-1] = "and " + wordsForSentence[lenght-1]
-	}
-	sentence := strings.Join(wordsForSentence, ", ")
+	// // Form a sentence out of the history in the form Message 1, Message 2, and Message 3
+	// words := session["history"]
+	// lenght := len(words)
+	// wordsForSentence := make([]string, lenght)
+	// copy(wordsForSentence, words)
+	// if lenght > 1 {
+	// 	wordsForSentence[lenght-1] = "and " + wordsForSentence[lenght-1]
+	// }
+	// sentence := strings.Join(wordsForSentence, ", ")
 
-	return fmt.Sprintf("So, you want %s! What else?", strings.ToLower(sentence)), nil
+	return fmt.Sprintf("So, you want %s! What else?", strings.ToLower(" ")), nil
 }
 
 // withLog Wraps HandlerFuncs to log requests to Stdout

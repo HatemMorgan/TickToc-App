@@ -1,26 +1,25 @@
 package main
 
 import (
+	"GoogleCalendarcontroller"
 	"chatbot"
 	"fmt"
-	"log"
-	"os"
 	"strconv"
 	"strings"
+
+	// Autoload environment variables in .env
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
-// Autoload environment variables in .env
-import _ "github.com/joho/godotenv/autoload"
-
 var x = -1
+var attendeesEmails []string
 
 func chatbotProcess(session chatbot.Session, message string) (string, error) {
 
-	var key string
 	if strings.EqualFold(message, "add") {
+		session = make(map[string]string)
 		x = 0
-		key = "event"
-		session[key] = []string{}
 	}
 
 	if strings.EqualFold(message, "again") {
@@ -30,6 +29,7 @@ func chatbotProcess(session chatbot.Session, message string) (string, error) {
 
 	if strings.EqualFold(message, "done") {
 		x = -1
+		GoogleCalendarcontroller.InsertEvent(session, attendeesEmails)
 		return fmt.Sprintf("%s", "If you want to add events, type 'add'!"), nil
 
 	}
@@ -39,44 +39,44 @@ func chatbotProcess(session chatbot.Session, message string) (string, error) {
 		x = 1
 		return fmt.Sprintf("%s", "Please enter the title of the event"), nil
 	case 1:
-		session[key] = append(session[key], message)
+		session["title"] = message
 		x = 2
 		return fmt.Sprintf("%s", "Please enter the description of the event"), nil
 	case 2:
-		session[key] = append(session[key], message)
+		session["description"] = message
 		x = 3
 		return fmt.Sprintf("%s", "Please enter the start dateTime of the event"), nil
 	case 3:
-		session[key] = append(session[key], message)
+		session["startDateTime"] = message
 		x = 4
 		return fmt.Sprintf("%s", "Please enter the end dateTime of the event"), nil
 	case 4:
-		session[key] = append(session[key], message)
+		session["endDateTime"] = message
 		x = 5
 		return fmt.Sprintf("%s", "Please enter the location of the event"), nil
 	case 5:
-		session[key] = append(session[key], message)
+		session["location"] = message
 		x = 6
 		return fmt.Sprintf("%s", "Please enter the organizer email of the event"), nil
 	case 6:
-		session[key] = append(session[key], message)
+		session["organizerEmail"] = message
 		x = 7
 		return fmt.Sprintf("%s", "Please enter the attendees email of the event and split the emails with - "), nil
 	case 7:
-		session[key] = append(session[key], message)
+		session["attendeesEmails"] = message
 		x = 8
 		return fmt.Sprintf("%s", "Please choose a calendar to add the event to it"), nil
 	case 8:
-		session[key] = append(session[key], message)
-		var eventArray = session[key]
-		var attendeesEmails = strings.Split(eventArray[6], "-")
+		session["calenderID"] = message
+
+		var attendeesEmails = strings.Split(session["attendeesEmails"], "-")
 		var attendees = " "
 
 		for i, v := range attendeesEmails {
 			attendees += " " + strconv.Itoa(i+1) + "- " + v + " "
 		}
 
-		var event = "Title: " + eventArray[0] + " , Description: " + eventArray[1] + " ,Start DateTime: " + eventArray[2] + " , End DateTime: " + eventArray[3] + " ,Location: " + eventArray[4] + " , Organizer email: " + eventArray[5] + " , Attendees emails: " + attendees + " , Calender type: " + eventArray[7]
+		var event = "Title: " + session["title"] + " , Description: " + session["description"] + " ,Start DateTime: " + session["startDateTime"] + " , End DateTime: " + session["endDateTime"] + " ,Location: " + session["location"] + " , Organizer email: " + session["organizerEmail"] + " , Attendees emails: " + attendees + " , Calender type: " + session["calenderID"]
 
 		return fmt.Sprintf("So your event is " + event + " . Either type done to add it or type again to re-add it ."), nil
 		// return fmt.Sprintf("%s", "This event is done! Either type 'add' or 'done'!"), nil
@@ -94,19 +94,37 @@ func chatbotProcess(session chatbot.Session, message string) (string, error) {
 }
 
 func main() {
-	// Uncomment the following lines to customize the chatbot
-	//chatbot.WelcomeMessage = "What's your name?"
-	chatbot.WelcomeMessage = "Tick-tock, Whenever you want to add an event, just type 'add'!"
-	chatbot.ProcessFunc(chatbotProcess)
+	// // Uncomment the following lines to customize the chatbot
+	// //chatbot.WelcomeMessage = "What's your name?"
+	// chatbot.WelcomeMessage = "Tick-tock, Whenever you want to add an event, just type 'add'!"
+	// chatbot.ProcessFunc(chatbotProcess)
 
-	// Use the PORT environment variable
-	port := os.Getenv("PORT")
-	// Default to 3000 if no PORT environment variable was defined
-	if port == "" {
-		port = "3000"
-	}
+	// // Use the PORT environment variable
+	// port := os.Getenv("PORT")
+	// // Default to 3000 if no PORT environment variable was defined
+	// if port == "" {
+	// 	port = "3000"
+	// }
 
-	// Start the server
-	fmt.Printf("Listening on port %s...\n", port)
-	log.Fatalln(chatbot.Engage(":" + port))
+	// // Start the server
+	// fmt.Printf("Listening on port %s...\n", port)
+	// log.Fatalln(chatbot.Engage(":" + port))
+
+	// testMap := make(map[string]string)
+	// testMap["title"] = "football"
+	// testMap["description"] = "football match"
+	// testMap["startDateTime"] = "2016-11-13T22:00:00-07:00"
+	// testMap["endDateTime"] = "2016-11-13T23:00:00-07:00"
+	// testMap["location"] = "Cairo,Egypt"
+	// testMap["organizerEmail"] = "hatemmorgan17@gmail.com"
+	// testMap["calenderID"] = "k352nehms8mbf0hbe69jat2qig@group.calendar.google.com"
+
+	// attendees := []string{"hatemmorgan17@gmail.com", "omartagguv@gmail.com"}
+
+	// GoogleCalendarcontroller.InsertEvent(testMap, attendees) //event id = gc23i3fr8kq9nph2c9nknbvvtc
+
+	//GoogleCalendarcontroller.CreateAdvancedLabCalendar()  // created calendar id = k352nehms8mbf0hbe69jat2qig@group.calendar.google.com
+	// GoogleCalendarcontroller.DeleteCalendar("b3cjs1oc7ql5jaecm98hv3fke0@group.calendar.google.com")
+	// GoogleCalendarcontroller.UpdateEvent("k352nehms8mbf0hbe69jat2qig@group.calendar.google.com",)
+	// controller.GetControllerList()
 }

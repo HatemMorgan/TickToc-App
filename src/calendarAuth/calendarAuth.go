@@ -89,17 +89,20 @@ func saveToken(file string, token *oauth2.Token) {
 	json.NewEncoder(f).Encode(token)
 }
 
-func getCalendarService() (calendar.Service, error) {
+// GetCalendarService gives service in order to call calendar apis
+func GetCalendarService() (calendar.Service, error) {
 	ctx := context.Background()
-
-	b, err := ioutil.ReadFile("client_secret.json")
+	// this should be changed to get path dynamically
+	//	b, err := ioutil.ReadFile("/home/hatem/workspaceGO/src/calendarAuth/client_secret.json")
+	b, err := ioutil.ReadFile("./calendarAuth/client_secret.json")
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
 
 	// If modifying these scopes, delete your previously saved credentials
 	// at ~/.credentials/calendar-go-quickstart.json
-	config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
+	config, err := google.ConfigFromJSON(b, calendar.CalendarScope)
+	// config, err := google.ConfigFromJSON(b)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
