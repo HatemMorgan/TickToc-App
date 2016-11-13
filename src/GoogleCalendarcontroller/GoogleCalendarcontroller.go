@@ -44,7 +44,12 @@ func InsertEvent(newEventMap map[string]string, attendeesEmails []string) (calen
 		log.Fatalf("Error: %v", err)
 		panic(err)
 	}
-
+	// creating an array of attendees with the emails given as a parameter
+	attendees := make([]*calendar.EventAttendee, len(attendeesEmails), len(attendeesEmails))
+	for _, v := range attendeesEmails {
+		attendee := &calendar.EventAttendee{Email: v}
+		attendees = append(attendees, attendee)
+	}
 	// creating new event
 	newEvent := &calendar.Event{
 		Summary:     newEventMap["title"],
@@ -58,10 +63,7 @@ func InsertEvent(newEventMap map[string]string, attendeesEmails []string) (calen
 			DateTime: newEventMap["endDateTime"],
 			TimeZone: "Egypt",
 		},
-		Attendees: []*calendar.EventAttendee{
-			&calendar.EventAttendee{Email: attendeesEmails[0]},
-			&calendar.EventAttendee{Email: attendeesEmails[1]},
-		},
+		Attendees: attendees,
 		Organizer: &calendar.EventOrganizer{Email: newEventMap["organizerEmail"]},
 	}
 
@@ -128,7 +130,7 @@ func DeleteCalendar(calendarID string) error {
 }
 
 //UpdateEvent it updates a specific event
-func UpdateEvent(calendarID, eventID string, newAttendees []calendar.EventAttendee, deletedAttendees map[string]string, updatedEventMap map[string]string) (calendar.Event, error) {
+func UpdateEvent(calendarID, eventID string, newAttendees []string, deletedAttendees map[string]string, updatedEventMap map[string]string) (calendar.Event, error) {
 	// Getting the authenticated calendar service
 	srv, err := calendarAuth.GetCalendarService()
 	if err != nil {
@@ -183,7 +185,10 @@ func UpdateEvent(calendarID, eventID string, newAttendees []calendar.EventAttend
 		// add new Attendees to event Attendees
 		if newAttendees != nil && len(newAttendees) > 0 {
 			for _, v := range newAttendees {
-				eventAttendees = append(eventAttendees, &v)
+				newEventAttendee := calendar.EventAttendee{
+					Email: v,
+				}
+				eventAttendees = append(eventAttendees, &newEventAttendee)
 			}
 		}
 		// update event attendees field with the new array
@@ -240,5 +245,27 @@ func GetEvent(calendarID, eventID string) (calendar.Event, error) {
 	}
 
 	fmt.Println("event: ", event)
+
+	for _, v := range event.Attendees {
+		fmt.Println(v)
+	}
 	return *event, nil
+}
+
+//DeleteEvent deletes an event
+func DeleteEvent(calendarID, eventID string) error {
+	// Getting the authenticated calendar service
+	srv, err := calendarAuth.GetCalendarService()
+	if err != nil {
+		log.Fatalf("Error: %v", err)
+		panic(err)
+	}
+
+	err = srv.Events.Delete(calendarID, eventID).Do()
+	if err != nil {
+		log.Fatalf("Unable to delete event %v", err)
+		return err
+	}
+	fmt.Println("event with ID: " + eventID + " is deleted")
+	return nil
 }

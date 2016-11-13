@@ -111,24 +111,31 @@ func main() {
 	// log.Fatalln(chatbot.Engage(":" + port))
 
 	// testMap := make(map[string]string)
-	// testMap["title"] = "football"
-	// testMap["description"] = "football match"
+	// testMap["title"] = "Cairo Party"
+	// testMap["description"] = "lets party"
 	// testMap["startDateTime"] = "2016-11-13T22:00:00-07:00"
 	// testMap["endDateTime"] = "2016-11-13T23:00:00-07:00"
 	// testMap["location"] = "Cairo,Egypt"
 	// testMap["organizerEmail"] = "hatemmorgan17@gmail.com"
 	// testMap["calenderID"] = "k352nehms8mbf0hbe69jat2qig@group.calendar.google.com"
-
-	// attendees := []string{"hatemmorgan17@gmail.com", "omartagguv@gmail.com"}
-
+	// attendees := []string{"hatemmorgan17@gmail.com", "omartagguv@gmail.com", "jojo@gmail.com"}
 	// GoogleCalendarcontroller.InsertEvent(testMap, attendees) //event id = gc23i3fr8kq9nph2c9nknbvvtc
 
 	//GoogleCalendarcontroller.CreateAdvancedLabCalendar()  // created calendar id = k352nehms8mbf0hbe69jat2qig@group.calendar.google.com
+
 	// GoogleCalendarcontroller.DeleteCalendar("b3cjs1oc7ql5jaecm98hv3fke0@group.calendar.google.com")
+
 	// GoogleCalendarcontroller.ListEvents("k352nehms8mbf0hbe69jat2qig@group.calendar.google.com")
 
-	updatedEvent := make(map[string]string)
-	updatedEvent["title"] = "Dream Park"
-	GoogleCalendarcontroller.UpdateEvent("k352nehms8mbf0hbe69jat2qig@group.calendar.google.com", "j518p4bcagq8kt1717vvmb8bf0", nil, nil)
+	// GoogleCalendarcontroller.GetEvent("k352nehms8mbf0hbe69jat2qig@group.calendar.google.com", "61qprni388l232cihg4mfi2bs4")
+
+	// updatedEvent := make(map[string]string)
+	// updatedEvent["title"] = "Dream Park"
+	// newAttendees := []string{"Ahmed@gmail.com"}
+	// deletedAttendees := make(map[string]string)
+	// deletedAttendees["omartagguv@gmail.com"] = "omartagguv@gmail.com"
+	// GoogleCalendarcontroller.UpdateEvent("k352nehms8mbf0hbe69jat2qig@group.calendar.google.com", "j518p4bcagq8kt1717vvmb8bf0", newAttendees, deletedAttendees, updatedEvent)
 	// controller.GetControllerList()
+
+	// GoogleCalendarcontroller.DeleteEvent("k352nehms8mbf0hbe69jat2qig@group.calendar.google.com", "j518p4bcagq8kt1717vvmb8bf0")
 }
