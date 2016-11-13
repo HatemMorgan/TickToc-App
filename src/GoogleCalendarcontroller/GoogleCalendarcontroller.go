@@ -202,7 +202,8 @@ func UpdateEvent(calendarID, eventID string, newAttendees []calendar.EventAttend
 }
 
 //ListEvents list all events in a specific calendar
-func ListEvents(calendarID string) {
+func ListEvents(calendarID string) ([]*calendar.Event, error) {
+	// Getting the authenticated calendar service
 	srv, err := calendarAuth.GetCalendarService()
 	if err != nil {
 		log.Fatalf("Error: %v", err)
@@ -213,10 +214,31 @@ func ListEvents(calendarID string) {
 
 	if err != nil {
 		log.Fatalf("Unable to retrieve calendar events list %v ", err)
+		return result.Items, err
 	}
 
 	events := result.Items
 	for _, event := range events {
 		fmt.Println("event id: " + event.Id + " and event summary: " + event.Summary)
 	}
+	return events, nil
+}
+
+//GetEvent gets an event
+func GetEvent(calendarID, eventID string) (calendar.Event, error) {
+	// Getting the authenticated calendar service
+	srv, err := calendarAuth.GetCalendarService()
+	if err != nil {
+		log.Fatalf("Error: %v", err)
+		panic(err)
+	}
+
+	event, err := srv.Events.Get(calendarID, eventID).Do()
+	if err != nil {
+		log.Fatalf("Unable to get event %v ", err)
+		return *event, nil
+	}
+
+	fmt.Println("event: ", event)
+	return *event, nil
 }
