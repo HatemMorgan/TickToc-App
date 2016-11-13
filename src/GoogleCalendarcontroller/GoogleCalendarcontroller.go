@@ -203,5 +203,20 @@ func UpdateEvent(calendarID, eventID string, newAttendees []calendar.EventAttend
 
 //ListEvents list all events in a specific calendar
 func ListEvents(calendarID string) {
+	srv, err := calendarAuth.GetCalendarService()
+	if err != nil {
+		log.Fatalf("Error: %v", err)
+		panic(err)
+	}
 
+	result, err := srv.Events.List(calendarID).Fields("items(id,summary)", "summary", "nextPageToken").Do()
+
+	if err != nil {
+		log.Fatalf("Unable to retrieve calendar events list %v ", err)
+	}
+
+	events := result.Items
+	for _, event := range events {
+		fmt.Println("event id: " + event.Id + " and event summary: " + event.Summary)
+	}
 }
