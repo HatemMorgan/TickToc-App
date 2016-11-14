@@ -40,11 +40,7 @@ func withLog(fn http.HandlerFunc) http.HandlerFunc {
 }
 
 // writeJSON Writes the JSON equivilant for data into ResponseWriter w
-func writeJSON(w http.ResponseWriter, data map[string]string, status string) {
+func writeJSON(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	encoder := json.NewEncoder(w)
-
-	encoder.Encode("Status: " + status)
-	encoder.Encode(data)
-
+	json.NewEncoder(w).Encode(data)
 }

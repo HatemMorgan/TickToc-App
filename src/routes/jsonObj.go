@@ -6,14 +6,19 @@ type errorObj struct {
 }
 
 type errorsJSONObj struct {
-	Status  string     `json:"Status"`
+	Status  int64      `json:"Status"`
 	Message string     `json:"message"`
 	Errors  []errorObj `json:"errors"`
 }
 
-type successJSONObj struct {
-	Status  string        `json:"Status"`
-	Message string        `json:"message"`
-	Page    int64         `json:"page"`
-	Results []interface{} `json:"results"`
+type successListJSONObj struct {
+	Status  int64               `json:"Status"`
+	Message string              `json:"message"`
+	Page    int64               `json:"page"`
+	Results []map[string]string `json:"results"`
+}
+type successSingleJSONObj struct {
+	Status  int64               `json:"Status"`
+	Message string              `json:"message"`
+	Results []map[string]string `json:"results"`
 }

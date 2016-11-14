@@ -4,18 +4,24 @@ import (
 	"chatbot"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
 // handles /welcome and respond with generated UUID
 func handleWelcome(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "Only Get requests are allowed.", http.StatusMethodNotAllowed)
+		// creating an error json object to be passed to the http response
+		newError := errorObj{Message: "Only Get requests are allowed", Resource: "Welcom Chat"}
+		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Request method not allowed ", Status: http.StatusMethodNotAllowed}
+		writeJSON(w, json)
+		log.Fatalf("Only Get requests are allowed.", http.StatusMethodNotAllowed)
 		return
 	}
+	res := chatbot.Welcome()
+	json := successSingleJSONObj{Status: http.StatusOK, Message: "OK", Results: []map[string]string{res}}
 
-	json := chatbot.Welcome()
-	writeJSON(w, json, "200 OK")
+	writeJSON(w, json)
 
 }
 
@@ -74,7 +80,7 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, json, "200 OK")
+	writeJSON(w, json)
 
 }
 
