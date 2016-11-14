@@ -11,6 +11,7 @@ import (
 )
 
 var (
+
 	// WelcomeMessage A constant to hold the welcome message
 	WelcomeMessage = "Tick-tock, Whenever you want to add an event, just type 'add'!"
 
@@ -45,7 +46,7 @@ var x = -1
 var attendeesEmails []string
 
 func defaultProcessor(session Session, message string) (string, error) {
-
+	eventController := controllers.NewEventController()
 	if strings.EqualFold(message, "add") {
 		session = make(map[string]string)
 		x = 0
@@ -58,7 +59,8 @@ func defaultProcessor(session Session, message string) (string, error) {
 
 	if strings.EqualFold(message, "done") {
 		x = -1
-		controllers.InsertEvent(session, attendeesEmails)
+
+		eventController.InsertEvent(session, attendeesEmails)
 		return fmt.Sprintf("%s", "If you want to add another events, type 'add'!"), nil
 
 	}
