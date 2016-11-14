@@ -45,11 +45,13 @@ func InsertEvent(newEventMap map[string]string, attendeesEmails []string) (calen
 		panic(err)
 	}
 	// creating an array of attendees with the emails given as a parameter
+	fmt.Println(len(attendeesEmails))
 	attendees := make([]*calendar.EventAttendee, len(attendeesEmails), len(attendeesEmails))
 	for _, v := range attendeesEmails {
 		attendee := &calendar.EventAttendee{Email: v}
 		attendees = append(attendees, attendee)
 	}
+	fmt.Println(len(attendees))
 	// creating new event
 	newEvent := &calendar.Event{
 		Summary:     newEventMap["title"],
@@ -245,7 +247,7 @@ func GetEvent(calendarID, eventID string) (calendar.Event, error) {
 	}
 
 	fmt.Println("event: ", event)
-
+	fmt.Println("---------------------------------------")
 	for _, v := range event.Attendees {
 		fmt.Println(v)
 	}

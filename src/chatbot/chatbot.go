@@ -3,16 +3,10 @@ package chatbot
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
-	"net/http/httptest"
 	"strconv"
 	"strings"
 	"time"
-
-	cors "github.com/heppu/simple-cors"
 )
 
 var (
@@ -40,7 +34,7 @@ type (
 	Session map[string]string
 
 	// JSON Holds a JSON object
-	JSON map[string]interface{}
+	// JSON map[string]interface{}
 
 	// Processor Alias for Process func
 	Processor func(session Session, message string) (string, error)
@@ -67,28 +61,7 @@ func defaultProcessor(session Session, message string) (string, error) {
 	// }
 	// sentence := strings.Join(wordsForSentence, ", ")
 
-	return fmt.Sprintf("So, you want %s! What else?", strings.ToLower(" ")), nil
-}
-
-// withLog Wraps HandlerFuncs to log requests to Stdout
-func withLog(fn http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		c := httptest.NewRecorder()
-		fn(c, r)
-		log.Printf("[%d] %-4s %s\n", c.Code, r.Method, r.URL.Path)
-
-		for k, v := range c.HeaderMap {
-			w.Header()[k] = v
-		}
-		w.WriteHeader(c.Code)
-		c.Body.WriteTo(w)
-	}
-}
-
-// writeJSON Writes the JSON equivilant for data into ResponseWriter w
-func writeJSON(w http.ResponseWriter, data JSON) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
+	return fmt.Sprintf("defaultProcessor is running !", strings.ToLower(" ")), nil
 }
 
 // ProcessFunc Sets the processor of the chatbot
@@ -96,8 +69,8 @@ func ProcessFunc(p Processor) {
 	processor = p
 }
 
-// handleWelcome Handles /welcome and responds with a welcome message and a generated UUID
-func handleWelcome(w http.ResponseWriter, r *http.Request) {
+//Welcome is called by welcome handler route to generate an UUID
+func Welcome() map[string]string {
 	// Generate a UUID.
 	// bygeeb time stamp unix format and represent it in base 10
 	hasher := md5.New()
@@ -108,94 +81,34 @@ func handleWelcome(w http.ResponseWriter, r *http.Request) {
 	sessions[uuid] = Session{}
 
 	// Write a JSON containg the welcome message and the generated UUID
-	writeJSON(w, JSON{
+	return map[string]string{
 		"uuid":    uuid,
 		"message": WelcomeMessage,
-	})
+	}
 }
 
-func handleChat(w http.ResponseWriter, r *http.Request) {
-
-	// for k, v := range sessions {
-	// 	log.Println("key : ", k, "  Value : ", v)
-	// }
-
-	// Make sure only POST requests are handled
-	if r.Method != http.MethodPost {
-		http.Error(w, "Only POST requests are allowed.", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Make sure a UUID exists in the Authorization header
-	uuid := r.Header.Get("Authorization")
-	if uuid == "" {
-		http.Error(w, "Missing or empty Authorization header.", http.StatusUnauthorized)
-		return
-	}
-
+//CheckIfAuthenticated checks if the user has a session opened and his uuid is valid
+func CheckIfAuthenticated(uuid string) bool {
 	// Make sure a session exists for the extracted UUID
-	session, sessionFound := sessions[uuid]
-	if !sessionFound {
-		http.Error(w, fmt.Sprintf("No session found for: %v.", uuid), http.StatusUnauthorized)
-		return
-	}
+	_, sessionFound := sessions[uuid]
+	return sessionFound
+}
 
-	// Parse the JSON string in the body of the request
-	data := JSON{}
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		http.Error(w, fmt.Sprintf("Couldn't decode JSON: %v.", err), http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
+//Chat is called by chat route handler to save message and return the new question
+func Chat(uuid string, data map[string]string) (map[string]string, error) {
 
-	// Make sure that the count session is Available in order to allow adding more than one event
-	// _, countFound := session["count"]
-	// if !countFound {
-	// 	session["count"] = []string{"1"}
-	// }
-
-	// Make sure a message key is defined in the body of the request
-	_, messageFound := data["message"]
-	if !messageFound {
-		http.Error(w, "Missing message key in body.", http.StatusBadRequest)
-		return
-	}
+	// gets user session
+	session, _ := sessions[uuid]
 
 	// Process the received message
-	message, err := processor(session, data["message"].(string))
+	message, err := processor(session, data["message"])
 	if err != nil {
-		http.Error(w, err.Error(), 422 /* http.StatusUnprocessableEntity */)
-		return
+		return nil, err
 	}
 
 	// Write a JSON containg the processed response
-	writeJSON(w, JSON{
+	return map[string]string{
 		"message": message,
-	})
+	}, nil
 
-}
-
-// handle Handles /
-func handle(w http.ResponseWriter, r *http.Request) {
-	body :=
-		"<!DOCTYPE html><html><head><title>Chatbot</title></head><body><pre style=\"font-family: monospace;\">\n" +
-			"Available Routes:\n\n" +
-			"  GET  /welcome -> handleWelcome\n" +
-			"  POST /chat    -> handleChat\n" +
-			"  GET  /        -> handle        (current)\n" +
-			"</pre></body></html>"
-	w.Header().Add("Content-Type", "text/html")
-	fmt.Fprintln(w, body)
-}
-
-// Engage Gives control to the chatbot
-func Engage(addr string) error {
-	// HandleFuncs
-	mux := http.NewServeMux()
-	mux.HandleFunc("/welcome", withLog(handleWelcome))
-	mux.HandleFunc("/chat", withLog(handleChat))
-	mux.HandleFunc("/", withLog(handle))
-
-	// Start the server
-	return http.ListenAndServe(addr, cors.CORS(mux))
 }
