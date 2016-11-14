@@ -1,4 +1,4 @@
-package googleCalendarcontroller
+package controllers
 
 import (
 	"calendarAuth"

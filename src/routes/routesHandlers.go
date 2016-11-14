@@ -2,9 +2,9 @@ package routes
 
 import (
 	"chatbot"
+	"controllers"
 	"encoding/json"
 	"fmt"
-	"googleCalendarcontroller"
 	"net/http"
 	"reflect"
 )
@@ -125,7 +125,7 @@ func eventListHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	calendarID := "k352nehms8mbf0hbe69jat2qig@group.calendar.google.com"
-	calendarTitle, events, err := googleCalendarcontroller.ListEvents(calendarID)
+	calendarTitle, events, err := controllers.ListEvents(calendarID)
 
 	if err != nil {
 		// creating error json object to be send with the response
@@ -181,7 +181,7 @@ func deleteEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := googleCalendarcontroller.DeleteEvent(calendarID, eventID)
+	err := controllers.DeleteEvent(calendarID, eventID)
 	if err != nil {
 		newError := errorObj{Message: "Unable to delete event. " + err.Error(), Resource: "Google calendar Event"}
 		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal Server Error", Status: http.StatusInternalServerError}
@@ -285,7 +285,7 @@ func updateEvent(w http.ResponseWriter, r *http.Request) {
 
 	}
 	fmt.Println(len(newAttendees), " ", len(deletedAttendees))
-	updatedEvent, err := googleCalendarcontroller.UpdateEvent(calendarID, eventID, newAttendees, deletedAttendees, eventMap)
+	updatedEvent, err := controllers.UpdateEvent(calendarID, eventID, newAttendees, deletedAttendees, eventMap)
 	if err != nil {
 		newError := errorObj{Message: err.Error(), Resource: "Google calendar Event"}
 		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal Server Error", Status: http.StatusInternalServerError}
@@ -323,7 +323,7 @@ func getEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// calling controller's get event function the return the event from google calendar api
-	event, err := googleCalendarcontroller.GetEvent(calendarID, eventID)
+	event, err := controllers.GetEvent(calendarID, eventID)
 	if err != nil {
 		newError := errorObj{Message: err.Error(), Resource: "Google calendar Event"}
 		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal Server Error", Status: http.StatusInternalServerError}
