@@ -4,6 +4,9 @@ import (
 	"GoogleCalendarcontroller"
 	"chatbot"
 	"fmt"
+	"log"
+	"os"
+	"routes"
 	"strconv"
 	"strings"
 
@@ -30,7 +33,7 @@ func chatbotProcess(session chatbot.Session, message string) (string, error) {
 	if strings.EqualFold(message, "done") {
 		x = -1
 		GoogleCalendarcontroller.InsertEvent(session, attendeesEmails)
-		return fmt.Sprintf("%s", "If you want to add events, type 'add'!"), nil
+		return fmt.Sprintf("%s", "If you want to add another events, type 'add'!"), nil
 
 	}
 
@@ -69,7 +72,8 @@ func chatbotProcess(session chatbot.Session, message string) (string, error) {
 	case 8:
 		session["calenderID"] = message
 
-		var attendeesEmails = strings.Split(session["attendeesEmails"], "-")
+		attendeesEmails = strings.Split(session["attendeesEmails"], "-")
+		fmt.Println(len(attendeesEmails))
 		var attendees = " "
 
 		for i, v := range attendeesEmails {
@@ -94,21 +98,21 @@ func chatbotProcess(session chatbot.Session, message string) (string, error) {
 }
 
 func main() {
-	// // Uncomment the following lines to customize the chatbot
-	// //chatbot.WelcomeMessage = "What's your name?"
-	// chatbot.WelcomeMessage = "Tick-tock, Whenever you want to add an event, just type 'add'!"
-	// chatbot.ProcessFunc(chatbotProcess)
+	// Uncomment the following lines to customize the chatbot
+	// chatbot.WelcomeMessage = "What's your name?"
+	chatbot.WelcomeMessage = "Tick-tock, Whenever you want to add an event, just type 'add'!"
+	chatbot.ProcessFunc(chatbotProcess)
 
-	// // Use the PORT environment variable
-	// port := os.Getenv("PORT")
-	// // Default to 3000 if no PORT environment variable was defined
-	// if port == "" {
-	// 	port = "3000"
-	// }
+	// Use the PORT environment variable
+	port := os.Getenv("PORT")
+	// Default to 3000 if no PORT environment variable was defined
+	if port == "" {
+		port = "3000"
+	}
 
-	// // Start the server
-	// fmt.Printf("Listening on port %s...\n", port)
-	// log.Fatalln(chatbot.Engage(":" + port))
+	// Start the server
+	fmt.Printf("Listening on port %s...\n", port)
+	log.Fatalln(routes.Routing(":" + port))
 
 	// testMap := make(map[string]string)
 	// testMap["title"] = "Cairo Party"
@@ -127,7 +131,7 @@ func main() {
 
 	// GoogleCalendarcontroller.ListEvents("k352nehms8mbf0hbe69jat2qig@group.calendar.google.com")
 
-	// GoogleCalendarcontroller.GetEvent("k352nehms8mbf0hbe69jat2qig@group.calendar.google.com", "61qprni388l232cihg4mfi2bs4")
+	// GoogleCalendarcontroller.GetEvent("k352nehms8mbf0hbe69jat2qig@group.calendar.google.com", "qobjl5rj6ebi2vuhukbli5oamk")
 
 	// updatedEvent := make(map[string]string)
 	// updatedEvent["title"] = "Dream Park"
