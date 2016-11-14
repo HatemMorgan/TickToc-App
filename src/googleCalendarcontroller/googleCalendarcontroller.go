@@ -1,4 +1,4 @@
-package GoogleCalendarcontroller
+package googleCalendarcontroller
 
 import (
 	"calendarAuth"
@@ -6,10 +6,13 @@ import (
 
 	"fmt"
 
+	"strings"
+
 	calendar "google.golang.org/api/calendar/v3"
 )
 
-func GetControllerList() {
+//GetCallenderList returns a list of all Calendars
+func GetCallenderList() {
 	srv, err := calendarAuth.GetCalendarService()
 	listRes, err := srv.CalendarList.List().Fields("items/id").Do()
 	if err != nil {
@@ -136,7 +139,7 @@ func UpdateEvent(calendarID, eventID string, newAttendees []string, deletedAtten
 	// Getting the authenticated calendar service
 	srv, err := calendarAuth.GetCalendarService()
 	if err != nil {
-		log.Fatalf("Error: %v", err)
+		fmt.Println("Error: ", err)
 		panic(err)
 	}
 	// Retrieve the event from the api
@@ -144,6 +147,7 @@ func UpdateEvent(calendarID, eventID string, newAttendees []string, deletedAtten
 
 	// updating the event fields with the new values that the user want to update
 	for key, value := range updatedEventMap {
+		key = strings.ToLower(key)
 		switch key {
 		case "title":
 			event.Summary = value
@@ -164,7 +168,7 @@ func UpdateEvent(calendarID, eventID string, newAttendees []string, deletedAtten
 		case "organizerEmail":
 			event.Organizer = &calendar.EventOrganizer{Email: value}
 		default:
-			return *event, fmt.Errorf("No field with this name: &k", key)
+			return calendar.Event{}, fmt.Errorf("No field with this name: %s", key)
 		}
 	}
 
@@ -200,8 +204,8 @@ func UpdateEvent(calendarID, eventID string, newAttendees []string, deletedAtten
 	event, err = srv.Events.Update(calendarID, eventID, event).Do()
 
 	if err != nil {
-		log.Fatalf("Unable to update event. %v\n", err)
-		return *event, err
+		fmt.Println("Unable to update event. ", err)
+		return calendar.Event{}, err
 	}
 
 	fmt.Println("Event Updated", event)
@@ -209,26 +213,34 @@ func UpdateEvent(calendarID, eventID string, newAttendees []string, deletedAtten
 }
 
 //ListEvents list all events in a specific calendar
-func ListEvents(calendarID string) ([]*calendar.Event, error) {
+func ListEvents(calendarID string) (string, []*calendar.Event, error) {
 	// Getting the authenticated calendar service
 	srv, err := calendarAuth.GetCalendarService()
 	if err != nil {
-		log.Fatalf("Error: %v", err)
+		fmt.Println("Error: ", err)
 		panic(err)
 	}
 
-	result, err := srv.Events.List(calendarID).Fields("items(id,summary)", "summary", "nextPageToken").Do()
+	result, err := srv.Events.List(calendarID).Fields("items(description,id,summary)", "summary", "nextPageToken").Do()
 
 	if err != nil {
-		log.Fatalf("Unable to retrieve calendar events list %v ", err)
-		return result.Items, err
+		fmt.Println("Unable to retrieve calendar events list ", err)
+		return "", make([]*calendar.Event, 0, 0), err
 	}
 
 	events := result.Items
-	for _, event := range events {
-		fmt.Println("event id: " + event.Id + " and event summary: " + event.Summary)
-	}
-	return events, nil
+	// fmt.Println(result.Summary)
+
+	// ***pagination
+	// for result.NextPageToken != "" {
+	// 	result, err := srv.Events.List(calendarID).Fields("items(description,id,summary)", "summary", "nextPageToken").Do()
+	// 	events = append(events[:], result.Items[:])
+	// }
+
+	// for _, event := range events {
+	// 	fmt.Println("event id: " + event.Id + " and event summary: " + event.Summary)
+	// }
+	return result.Summary, events, nil
 }
 
 //GetEvent gets an event
@@ -242,8 +254,8 @@ func GetEvent(calendarID, eventID string) (calendar.Event, error) {
 
 	event, err := srv.Events.Get(calendarID, eventID).Do()
 	if err != nil {
-		log.Fatalf("Unable to get event %v ", err)
-		return *event, nil
+		fmt.Println("Unable to get event  ", err)
+		return calendar.Event{}, fmt.Errorf("No Event with this ID: "+eventID+" ", err)
 	}
 
 	fmt.Println("event: ", event)
@@ -259,13 +271,13 @@ func DeleteEvent(calendarID, eventID string) error {
 	// Getting the authenticated calendar service
 	srv, err := calendarAuth.GetCalendarService()
 	if err != nil {
-		log.Fatalf("Error: %v", err)
+		fmt.Println("Error: ", err)
 		panic(err)
 	}
 
 	err = srv.Events.Delete(calendarID, eventID).Do()
 	if err != nil {
-		log.Fatalf("Unable to delete event %v", err)
+		fmt.Println("Unable to delete event ", err)
 		return err
 	}
 	fmt.Println("event with ID: " + eventID + " is deleted")

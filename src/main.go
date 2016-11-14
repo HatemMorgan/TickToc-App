@@ -1,9 +1,9 @@
 package main
 
 import (
-	"GoogleCalendarcontroller"
 	"chatbot"
 	"fmt"
+	"googleCalendarcontroller"
 	"log"
 	"os"
 	"routes"
@@ -32,7 +32,7 @@ func chatbotProcess(session chatbot.Session, message string) (string, error) {
 
 	if strings.EqualFold(message, "done") {
 		x = -1
-		GoogleCalendarcontroller.InsertEvent(session, attendeesEmails)
+		googleCalendarcontroller.InsertEvent(session, attendeesEmails)
 		return fmt.Sprintf("%s", "If you want to add another events, type 'add'!"), nil
 
 	}
