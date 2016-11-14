@@ -1,5 +1,9 @@
 package routes
 
+import (
+	calendar "google.golang.org/api/calendar/v3"
+)
+
 type errorObj struct {
 	Resource string `json:"resource"`
 	Message  string `json:"message"`
@@ -21,4 +25,10 @@ type successSingleJSONObj struct {
 	Status  int64               `json:"Status"`
 	Message string              `json:"message"`
 	Results []map[string]string `json:"results"`
+}
+
+type successEventJSONObj struct {
+	Status  int64          `json:"Status"`
+	Message string         `json:"message"`
+	Results calendar.Event `json:"results"`
 }

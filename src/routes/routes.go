@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	// Third party packages
+
 	cors "github.com/heppu/simple-cors"
 )
 
@@ -18,7 +20,7 @@ func Routing(addr string) error {
 	mux.HandleFunc("/chat/event", withLog(handleChat))
 	mux.HandleFunc("/", withLog(handle))
 	// mux.HandleFunc("/events/list")
-	mux.HandleFunc("/events/{id}", withLog(eventHandler))
+	mux.HandleFunc("/events", withLog(eventHandler))
 
 	// Start the server
 	return http.ListenAndServe(addr, cors.CORS(mux))
