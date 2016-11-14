@@ -16,10 +16,11 @@ type errorsJSONObj struct {
 }
 
 type successListJSONObj struct {
-	Status  int64               `json:"Status"`
-	Message string              `json:"message"`
-	Page    int64               `json:"page"`
-	Results []map[string]string `json:"results"`
+	Status        int64             `json:"Status"`
+	Message       string            `json:"message"`
+	Page          int64             `json:"page"`
+	CalendarTitle string            `json:"calendar"`
+	Results       []*calendar.Event `json:"results"`
 }
 type successSingleJSONObj struct {
 	Status  int64               `json:"Status"`
@@ -31,4 +32,9 @@ type successEventJSONObj struct {
 	Status  int64          `json:"Status"`
 	Message string         `json:"message"`
 	Results calendar.Event `json:"results"`
+}
+
+type successJSONObj struct {
+	Status  int64  `json:"Status"`
+	Message string `json:"message"`
 }
