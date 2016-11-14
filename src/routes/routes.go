@@ -15,8 +15,10 @@ func Routing(addr string) error {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/welcome", withLog(handleWelcome))
-	mux.HandleFunc("/chat", withLog(handleChat))
+	mux.HandleFunc("/chat/event", withLog(handleChat))
 	mux.HandleFunc("/", withLog(handle))
+	// mux.HandleFunc("/events/list")
+	mux.HandleFunc("/events/{id}", withLog(eventHandler))
 
 	// Start the server
 	return http.ListenAndServe(addr, cors.CORS(mux))
@@ -38,7 +40,11 @@ func withLog(fn http.HandlerFunc) http.HandlerFunc {
 }
 
 // writeJSON Writes the JSON equivilant for data into ResponseWriter w
-func writeJSON(w http.ResponseWriter, data map[string]string) {
+func writeJSON(w http.ResponseWriter, data map[string]string, status string) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
+	encoder := json.NewEncoder(w)
+
+	encoder.Encode("Status: " + status)
+	encoder.Encode(data)
+
 }

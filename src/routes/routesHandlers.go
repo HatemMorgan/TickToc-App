@@ -15,7 +15,7 @@ func handleWelcome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json := chatbot.Welcome()
-	writeJSON(w, json)
+	writeJSON(w, json, "200 OK")
 
 }
 
@@ -74,6 +74,28 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, json)
+	writeJSON(w, json, "200 OK")
 
+}
+
+func eventHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		// catching any error thrown
+		defer func() {
+			err := recover()
+			if err != nil {
+				http.Error(w, "Unable to connect to google calendar . Please try again. ", http.StatusInternalServerError)
+			}
+		}()
+
+		// calendarID := "k352nehms8mbf0hbe69jat2qig@group.calendar.google.com"
+		// eventID := r.URL.Query().Get("id")
+		// calling controller's get event function the return the event from google calendar api
+		// event, err := googleCalendarcontroller.GetEvent(calendarID, eventID)
+		// if err != nil {
+		// 	http.Error(w, "Unable to fetch event from google calendar . Please try again. ", http.StatusInternalServerError)
+		// 	return
+		// }
+
+	}
 }

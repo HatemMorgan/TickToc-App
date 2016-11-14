@@ -1,4 +1,4 @@
-package GoogleCalendarcontroller
+package googleCalendarcontroller
 
 import (
 	"calendarAuth"
@@ -9,7 +9,8 @@ import (
 	calendar "google.golang.org/api/calendar/v3"
 )
 
-func GetControllerList() {
+//GetCallenderList returns a list of all Calendars
+func GetCallenderList() {
 	srv, err := calendarAuth.GetCalendarService()
 	listRes, err := srv.CalendarList.List().Fields("items/id").Do()
 	if err != nil {
@@ -243,7 +244,7 @@ func GetEvent(calendarID, eventID string) (calendar.Event, error) {
 	event, err := srv.Events.Get(calendarID, eventID).Do()
 	if err != nil {
 		log.Fatalf("Unable to get event %v ", err)
-		return *event, nil
+		return *event, err
 	}
 
 	fmt.Println("event: ", event)
