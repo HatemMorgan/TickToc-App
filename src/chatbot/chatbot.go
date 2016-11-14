@@ -1,6 +1,7 @@
 package chatbot
 
 import (
+	"controllers"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
@@ -11,7 +12,7 @@ import (
 
 var (
 	// WelcomeMessage A constant to hold the welcome message
-	WelcomeMessage = "Welcome, what do you want to order?"
+	WelcomeMessage = "Tick-tock, Whenever you want to add an event, just type 'add'!"
 
 	// sessions = {
 	//   "uuid1" = Session{
@@ -40,28 +41,87 @@ type (
 	Processor func(session Session, message string) (string, error)
 )
 
+var x = -1
+var attendeesEmails []string
+
 func defaultProcessor(session Session, message string) (string, error) {
-	// // Make sure the message is unique in history
-	// for _, m := range session["history"] {
-	// 	if strings.EqualFold(m, message) {
-	// 		return "", fmt.Errorf("You've already ordered %s before!", message)
+
+	if strings.EqualFold(message, "add") {
+		session = make(map[string]string)
+		x = 0
+	}
+
+	if strings.EqualFold(message, "again") {
+		x = -1
+		return fmt.Sprintf("%s", "If you want to add events, type 'add'!"), nil
+	}
+
+	if strings.EqualFold(message, "done") {
+		x = -1
+		controllers.InsertEvent(session, attendeesEmails)
+		return fmt.Sprintf("%s", "If you want to add another events, type 'add'!"), nil
+
+	}
+
+	switch x {
+	case 0:
+		x = 1
+		return fmt.Sprintf("%s", "Please enter the title of the event"), nil
+	case 1:
+		session["title"] = message
+		x = 2
+		return fmt.Sprintf("%s", "Please enter the description of the event"), nil
+	case 2:
+		session["description"] = message
+		x = 3
+		return fmt.Sprintf("%s", "Please enter the start dateTime of the event"), nil
+	case 3:
+		session["startDateTime"] = message
+		x = 4
+		return fmt.Sprintf("%s", "Please enter the end dateTime of the event"), nil
+	case 4:
+		session["endDateTime"] = message
+		x = 5
+		return fmt.Sprintf("%s", "Please enter the location of the event"), nil
+	case 5:
+		session["location"] = message
+		x = 6
+		return fmt.Sprintf("%s", "Please enter the organizer email of the event"), nil
+	case 6:
+		session["organizerEmail"] = message
+		x = 7
+		return fmt.Sprintf("%s", "Please enter the attendees email of the event and split the emails with - "), nil
+	case 7:
+		session["attendeesEmails"] = message
+		x = 8
+		return fmt.Sprintf("%s", "Please choose a calendar to add the event to it"), nil
+	case 8:
+		session["calenderID"] = message
+
+		attendeesEmails = strings.Split(session["attendeesEmails"], "-")
+		fmt.Println(len(attendeesEmails))
+		var attendees = " "
+
+		for i, v := range attendeesEmails {
+			attendees += " " + strconv.Itoa(i+1) + "- " + v + " "
+		}
+
+		var event = "Title: " + session["title"] + " , Description: " + session["description"] + " ,Start DateTime: " + session["startDateTime"] + " , End DateTime: " + session["endDateTime"] + " ,Location: " + session["location"] + " , Organizer email: " + session["organizerEmail"] + " , Attendees emails: " + attendees + " , Calender type: " + session["calenderID"]
+
+		return fmt.Sprintf("So your event is " + event + " . Either type done to add it or type again to re-add it ."), nil
+		// return fmt.Sprintf("%s", "This event is done! Either type 'add' or 'done'!"), nil
+
+	default:
+		return "", fmt.Errorf("%s", "Invalid text!")
+
+	}
+
+	// 	if strings.EqualFold(message, "chatbot") {
+	// 		return "", fmt.Errorf("This can't be, I'm the one and only %s!", message)
 	// 	}
-	// }
 
-	// // Add the message in the parsed body to the messages in the session
-	// session["history"] = append(session["history"], message)
+	// 	return fmt.Sprintf("Hello %s, my name is chatbot. What was yours again?", message), nil
 
-	// // Form a sentence out of the history in the form Message 1, Message 2, and Message 3
-	// words := session["history"]
-	// lenght := len(words)
-	// wordsForSentence := make([]string, lenght)
-	// copy(wordsForSentence, words)
-	// if lenght > 1 {
-	// 	wordsForSentence[lenght-1] = "and " + wordsForSentence[lenght-1]
-	// }
-	// sentence := strings.Join(wordsForSentence, ", ")
-
-	return fmt.Sprintf("defaultProcessor is running !", strings.ToLower(" ")), nil
 }
 
 // ProcessFunc Sets the processor of the chatbot

@@ -1,107 +1,30 @@
 package main
 
 import (
-	"chatbot"
-	"controllers"
 	"fmt"
 	"log"
 	"os"
 	"routes"
-	"strconv"
-	"strings"
+
+	mgo "gopkg.in/mgo.v2"
 
 	// Autoload environment variables in .env
 
 	_ "github.com/joho/godotenv/autoload"
 )
 
-var x = -1
-var attendeesEmails []string
+func getSession() *mgo.Session {
+	// Connect to our local mongo
+	s, err := mgo.Dial("mongodb://localhost")
 
-func chatbotProcess(session chatbot.Session, message string) (string, error) {
-
-	if strings.EqualFold(message, "add") {
-		session = make(map[string]string)
-		x = 0
+	// Check if connection error, is mongo running?
+	if err != nil {
+		panic(err)
 	}
-
-	if strings.EqualFold(message, "again") {
-		x = -1
-		return fmt.Sprintf("%s", "If you want to add events, type 'add'!"), nil
-	}
-
-	if strings.EqualFold(message, "done") {
-		x = -1
-		controllers.InsertEvent(session, attendeesEmails)
-		return fmt.Sprintf("%s", "If you want to add another events, type 'add'!"), nil
-
-	}
-
-	switch x {
-	case 0:
-		x = 1
-		return fmt.Sprintf("%s", "Please enter the title of the event"), nil
-	case 1:
-		session["title"] = message
-		x = 2
-		return fmt.Sprintf("%s", "Please enter the description of the event"), nil
-	case 2:
-		session["description"] = message
-		x = 3
-		return fmt.Sprintf("%s", "Please enter the start dateTime of the event"), nil
-	case 3:
-		session["startDateTime"] = message
-		x = 4
-		return fmt.Sprintf("%s", "Please enter the end dateTime of the event"), nil
-	case 4:
-		session["endDateTime"] = message
-		x = 5
-		return fmt.Sprintf("%s", "Please enter the location of the event"), nil
-	case 5:
-		session["location"] = message
-		x = 6
-		return fmt.Sprintf("%s", "Please enter the organizer email of the event"), nil
-	case 6:
-		session["organizerEmail"] = message
-		x = 7
-		return fmt.Sprintf("%s", "Please enter the attendees email of the event and split the emails with - "), nil
-	case 7:
-		session["attendeesEmails"] = message
-		x = 8
-		return fmt.Sprintf("%s", "Please choose a calendar to add the event to it"), nil
-	case 8:
-		session["calenderID"] = message
-
-		attendeesEmails = strings.Split(session["attendeesEmails"], "-")
-		fmt.Println(len(attendeesEmails))
-		var attendees = " "
-
-		for i, v := range attendeesEmails {
-			attendees += " " + strconv.Itoa(i+1) + "- " + v + " "
-		}
-
-		var event = "Title: " + session["title"] + " , Description: " + session["description"] + " ,Start DateTime: " + session["startDateTime"] + " , End DateTime: " + session["endDateTime"] + " ,Location: " + session["location"] + " , Organizer email: " + session["organizerEmail"] + " , Attendees emails: " + attendees + " , Calender type: " + session["calenderID"]
-
-		return fmt.Sprintf("So your event is " + event + " . Either type done to add it or type again to re-add it ."), nil
-		// return fmt.Sprintf("%s", "This event is done! Either type 'add' or 'done'!"), nil
-
-	default:
-		return "", fmt.Errorf("%s", "Invalid text!")
-
-	}
-
-	// 	if strings.EqualFold(message, "chatbot") {
-	// 		return "", fmt.Errorf("This can't be, I'm the one and only %s!", message)
-	// 	}
-
-	// 	return fmt.Sprintf("Hello %s, my name is chatbot. What was yours again?", message), nil
+	return s
 }
 
 func main() {
-	// Uncomment the following lines to customize the chatbot
-	// chatbot.WelcomeMessage = "What's your name?"
-	chatbot.WelcomeMessage = "Tick-tock, Whenever you want to add an event, just type 'add'!"
-	chatbot.ProcessFunc(chatbotProcess)
 
 	// Use the PORT environment variable
 	port := os.Getenv("PORT")
@@ -109,10 +32,11 @@ func main() {
 	if port == "" {
 		port = "3000"
 	}
-
 	// Start the server
 	fmt.Printf("Listening on port %s...\n", port)
 	log.Fatalln(routes.Routing(":" + port))
+
+	// Manually Testing
 
 	// testMap := make(map[string]string)
 	// testMap["title"] = "Cairo Party"
