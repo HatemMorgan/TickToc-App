@@ -1,14 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"os"
-	"routes"
+	"time"
 
 	mgo "gopkg.in/mgo.v2"
 
 	// Autoload environment variables in .env
+
+	"models"
+
+	"controllers"
+
+	"fmt"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -26,17 +29,20 @@ func getSession() *mgo.Session {
 
 func main() {
 
-	// Use the PORT environment variable
-	port := os.Getenv("PORT")
-	// Default to 3000 if no PORT environment variable was defined
-	if port == "" {
-		port = "3000"
-	}
-	// Start the server
-	fmt.Printf("Listening on port %s...\n", port)
-	log.Fatalln(routes.Routing(":" + port))
+	// // Use the PORT environment variable
+	// port := os.Getenv("PORT")
+	// // Default to 3000 if no PORT environment variable was defined
+	// if port == "" {
+	// 	port = "3000"
+	// }
+	// // Start the server
+	// fmt.Printf("Listening on port %s...\n", port)
+	// log.Fatalln(routes.Routing(":" + port))
 
-	// Manually Testing
+	// Manually Testing for events
+
+	// a := time.Now().UnixNano() / int64(time.Millisecond)
+	// fmt.Printf("%d \n", a)
 
 	// testMap := make(map[string]string)
 	// testMap["title"] = "Cairo Party"
@@ -66,4 +72,25 @@ func main() {
 	// controller.GetControllerList()
 
 	// GoogleCalendarcontroller.DeleteEvent("k352nehms8mbf0hbe69jat2qig@group.calendar.google.com", "j518p4bcagq8kt1717vvmb8bf0")
+
+	// manual testing for tasks
+	newTask := models.Task{
+		Title:         "Embedded Quiz",
+		Description:   "Sheet 6 and 7 Embedded C",
+		StartDateTime: time.Now().UnixNano() / int64(time.Millisecond),
+		EndDateTime:   time.Now().UnixNano() / int64(time.Millisecond),
+		Location: models.Location{
+			Latitude:  "0.002",
+			Longitude: "-0.23324",
+		},
+	}
+
+	taskController := controllers.NewTaskController(getSession())
+	task, err := taskController.InsertTask(newTask)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(task)
+
 }

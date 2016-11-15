@@ -22,7 +22,8 @@ func NewTaskController(s *mgo.Session) *TaskController {
 	return &TaskController{s}
 }
 
-func (taskController TaskController) insertTask(newTask models.Task) (models.Task, error) {
+//InsertTask is responsible to add new task to database
+func (taskController TaskController) InsertTask(newTask models.Task) (models.Task, error) {
 	// add an ID
 	newTask.ID = bson.NewObjectId()
 
@@ -37,10 +38,10 @@ func (taskController TaskController) insertTask(newTask models.Task) (models.Tas
 }
 
 //GetTask retrieves an individual task resource
-func (taskController TaskController) GetTask(id string) (models.Task, error) {
+func (taskController TaskController) GetTask(id string) (bson.ObjectId, error) {
 	// Verify id is ObjectId, otherwise return error
 	if !bson.IsObjectIdHex(id) {
-		return models.Task{}, fmt.Errorf("Invalid ID")
+		return "", fmt.Errorf("Invalid ID")
 	}
 	// Grab id
 	objectID := bson.ObjectIdHex(id)
@@ -50,10 +51,10 @@ func (taskController TaskController) GetTask(id string) (models.Task, error) {
 	err := taskController.session.DB("advanced_computer_lab").C("tasks").FindId(objectID).One(&task)
 
 	if err != nil {
-		return models.Task{}, err
+		return "", err
 	}
 
-	return task, nil
+	return task.ID, nil
 }
 
 //RemoveTask removes an existing task resource
@@ -65,6 +66,32 @@ func (taskController TaskController) RemoveTask(id string) error {
 	objectID := bson.ObjectIdHex(id)
 
 	err := taskController.session.DB("advanced_computer_lab").C("tasks").RemoveId(objectID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//UpdateTask update an exsisting task
+func (taskController TaskController) UpdateTask(updatedMap map[string]string, id string) error {
+
+	// Verify id is ObjectId, otherwise return error
+	if !bson.IsObjectIdHex(id) {
+		return fmt.Errorf("Invalid ID")
+	}
+	// Grab id
+	objectID := bson.ObjectIdHex(id)
+
+	// creating a model to add to it the updated key value pairs
+	model := bson.M{}
+
+	// iterating on the updated map to updated the old task
+	for key, value := range updatedMap {
+		model[key] = value
+	}
+	// updating the old task by the new values
+	err := taskController.session.DB("advanced_computer_lab").C("tasks").UpdateId(objectID, bson.M{"$set": model})
 	if err != nil {
 		return err
 	}
