@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"routesHandlers"
 
 	cors "github.com/heppu/simple-cors"
 )
@@ -12,13 +13,15 @@ import (
 //Routing handles all Routings
 func Routing(addr string) error {
 	// HandleFuncs
+
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/welcome", withLog(handleWelcome))
-	mux.HandleFunc("/chat/event", withLog(handleChat))
-	mux.HandleFunc("/events/list", withLog(eventListHandler))
-	mux.HandleFunc("/events", withLog(eventHandler))
-	mux.HandleFunc("/", withLog(handle))
+	mux.HandleFunc("/welcome", withLog(routesHandlers.handleWelcome))
+	mux.HandleFunc("/chat/event", withLog(routesHandlers.handleChat))
+	mux.HandleFunc("/events/list", withLog(routesHandlers.eventListHandler))
+	mux.HandleFunc("/events", withLog(routesHandlers.eventHandler))
+	mux.HandleFunc("/tasks", withLog(routesHandlers.taskHandler))
+	mux.HandleFunc("/", withLog(routesHandlers.handle))
 	// Start the server
 	return http.ListenAndServe(addr, cors.CORS(mux))
 }

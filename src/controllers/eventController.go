@@ -2,9 +2,8 @@ package controllers
 
 import (
 	"calendarAuth"
-	"log"
-
 	"fmt"
+	"log"
 
 	"strings"
 
@@ -126,7 +125,7 @@ func (ec EventController) CreateAdvancedLabCalendar() (calendar.Calendar, error)
 }
 
 //DeleteCalendar deletes a calendar with a specific ID
-func DeleteCalendar(calendarID string) error {
+func (ec EventController) DeleteCalendar(calendarID string) error {
 	// Getting the authenticated calendar service
 	srv, err := calendarAuth.GetCalendarService()
 	if err != nil {

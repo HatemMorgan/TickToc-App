@@ -15,7 +15,7 @@ type (
 
 	// TaskController represents the controller for operating on the Task resource
 	TaskController struct {
-		session *mgo.Session
+		Session *mgo.Session
 	}
 )
 
@@ -28,9 +28,8 @@ func NewTaskController(s *mgo.Session) *TaskController {
 func (taskController TaskController) InsertTask(newTask models.Task) (bson.ObjectId, error) {
 	// add an ID
 	newTask.ID = bson.NewObjectId()
-
 	// Write the task to mongo
-	err := taskController.session.DB("advanced_computer_lab").C("tasks").Insert(newTask)
+	err := taskController.Session.DB("advanced_computer_lab").C("tasks").Insert(newTask)
 	if err != nil {
 		return "", fmt.Errorf("Unable to add new Task . %v ", err)
 	}
@@ -50,7 +49,7 @@ func (taskController TaskController) GetTask(id string) (models.Task, error) {
 
 	// get task from mongo
 	task := models.Task{}
-	err := taskController.session.DB("advanced_computer_lab").C("tasks").FindId(objectID).One(&task)
+	err := taskController.Session.DB("advanced_computer_lab").C("tasks").FindId(objectID).One(&task)
 
 	if err != nil {
 		return models.Task{}, fmt.Errorf("Unable to get task with id: %s . %v", id, err)
@@ -67,7 +66,7 @@ func (taskController TaskController) RemoveTask(id string) error {
 	// Grab id
 	objectID := bson.ObjectIdHex(id)
 
-	err := taskController.session.DB("advanced_computer_lab").C("tasks").RemoveId(objectID)
+	err := taskController.Session.DB("advanced_computer_lab").C("tasks").RemoveId(objectID)
 	if err != nil {
 		return fmt.Errorf("Unable to remove task with id: %s . %v", id, err)
 	}
@@ -122,10 +121,15 @@ func (taskController TaskController) UpdateTask(updatedMap map[string]string, id
 	}
 	fmt.Println(model)
 	// updating the old task by the new values
-	err := taskController.session.DB("advanced_computer_lab").C("tasks").UpdateId(objectID, bson.M{"$set": model})
+	err := taskController.Session.DB("advanced_computer_lab").C("tasks").UpdateId(objectID, bson.M{"$set": model})
 	if err != nil {
 		return err
 	}
 
 	return nil
 }
+
+// //ListTasks lists all tasks
+// func ListTasks() ([]models.Task, error) {
+
+// }
