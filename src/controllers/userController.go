@@ -13,7 +13,7 @@ type (
 
 	//UserController represents the controller for operating on the user resource
 	UserController struct {
-		session *mgo.Session
+		Session *mgo.Session
 	}
 )
 
@@ -22,18 +22,18 @@ func NewUserController(s *mgo.Session) *UserController {
 	return &UserController{s}
 }
 
-//InsertTask is responsible to add new task to database
-func (userController UserController) InsertTask(newUser models.User) (bson.ObjectId, error) {
+//InsertUser is responsible to add new user to database
+func (userController UserController) InsertUser(newUser models.User) (string, error) {
 	// add an ID
 	newUser.ID = bson.NewObjectId()
 
 	// Write the user to mongo
-	err := userController.session.DB("advanced_computer_lab").C("users").Insert(newUser)
+	err := userController.Session.DB("advanced_computer_lab").C("users").Insert(newUser)
 	if err != nil {
 		return "", fmt.Errorf("Unable to add new Task . %v ", err)
 	}
 
-	return newUser.ID, nil
+	return newUser.ID.String(), nil
 }
 
 //GetUser retrieves an individual user resource
@@ -47,7 +47,7 @@ func (userController UserController) GetUser(id string) (models.User, error) {
 
 	// get user from mongo
 	user := models.User{}
-	err := userController.session.DB("advanced_computer_lab").C("users").FindId(objectID).One(&user)
+	err := userController.Session.DB("advanced_computer_lab").C("users").FindId(objectID).One(&user)
 
 	if err != nil {
 		return models.User{}, fmt.Errorf("Unable to get user with id: %s . %v", id, err)
@@ -64,7 +64,7 @@ func (userController UserController) RemoveUser(id string) error {
 	// Grab id
 	objectID := bson.ObjectIdHex(id)
 
-	err := userController.session.DB("advanced_computer_lab").C("users").RemoveId(objectID)
+	err := userController.Session.DB("advanced_computer_lab").C("users").RemoveId(objectID)
 	if err != nil {
 		return fmt.Errorf("Unable to remove user with id: %s . %v", id, err)
 	}
@@ -89,18 +89,19 @@ func (userController UserController) UpdateUser(updatedMap map[string]string, id
 
 	for key, value := range updatedMap {
 		// make sure that the field is a valid field for user resource
-		fieldsMap := map[string]string{"firstName": "FirstName", "lastName": "LastName", "email": "Email", "calenarID": "CalendarID"}
+		fieldsMap := map[string]string{"FirstName": "firstName", "LastName": "lastName", "Email": "email", "CalenarID": "calenarID"}
 		_, ok := fieldsMap[key]
 		if !ok {
 			return fmt.Errorf("Invalid Field with this name: %s", key)
 		}
 
 		// adding key value pairs
-		model[key] = value
+		k := fieldsMap[key]
+		model[k] = value
 	}
 
 	// updating the old user by the new values
-	err := userController.session.DB("advanced_computer_lab").C("users").UpdateId(objectID, bson.M{"$set": model})
+	err := userController.Session.DB("advanced_computer_lab").C("users").UpdateId(objectID, bson.M{"$set": model})
 	if err != nil {
 		return err
 	}

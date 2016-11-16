@@ -100,7 +100,7 @@ func (ec EventController) InsertEvent(newEventMap map[string]string, attendeesEm
 }
 
 //CreateAdvancedLabCalendar creates a new calendar for Advanced computer lab course
-func (ec EventController) CreateAdvancedLabCalendar() (calendar.Calendar, error) {
+func (ec EventController) CreateAdvancedLabCalendar() (string, error) {
 	// Getting the authenticated calendar service
 	srv, err := calendarAuth.GetCalendarService()
 	if err != nil {
@@ -117,11 +117,10 @@ func (ec EventController) CreateAdvancedLabCalendar() (calendar.Calendar, error)
 	// Inserting new calendar
 	calendar, err := srv.Calendars.Insert(newCalendar).Do()
 	if err != nil {
-		log.Fatalf("Unable to create calendar. %v\n", err)
-		return *calendar, err
+		return "", fmt.Errorf("Unable to create calendar. %v\n", err)
 	}
 	fmt.Println("calendar created and calendar id = ", calendar.Id)
-	return *calendar, nil
+	return calendar.Id, nil
 }
 
 //DeleteCalendar deletes a calendar with a specific ID

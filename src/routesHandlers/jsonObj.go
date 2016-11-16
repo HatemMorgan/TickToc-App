@@ -1,7 +1,9 @@
 package routesHandlers
 
 import (
+	"encoding/json"
 	"models"
+	"net/http"
 
 	calendar "google.golang.org/api/calendar/v3"
 )
@@ -46,4 +48,16 @@ type successTaskJSONObj struct {
 	Status  int64       `json:"Status"`
 	Message string      `json:"message"`
 	Results models.Task `json:"results"`
+}
+
+type successUserJSONObj struct {
+	Status  int64       `json:"Status"`
+	Message string      `json:"message"`
+	Results models.User `json:"results"`
+}
+
+//WriteJSON Writes the JSON equivilant for data into ResponseWriter w
+func writeJSON(w http.ResponseWriter, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(data)
 }

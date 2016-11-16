@@ -8,7 +8,7 @@ import (
 	"reflect"
 )
 
-func eventHandler(w http.ResponseWriter, r *http.Request) {
+func EventHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		getEvent(w, r)
 		return
@@ -45,8 +45,19 @@ func deleteEvent(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	calendarID := "k352nehms8mbf0hbe69jat2qig@group.calendar.google.com"
+	userID := r.URL.Query().Get("id")
 	eventID := r.URL.Query().Get("id")
+	user, err := getUser(userID)
+
+	if err != nil {
+		newError := errorObj{Message: err.Error(), Resource: "Users"}
+		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal server error", Status: http.StatusInternalServerError}
+		writeJSON(w, json)
+		fmt.Println(err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// get Calendar id of the user
+	calendarID := user.CalendarID
 
 	// creating error json object to be passed with the response if the eventid is not provided
 	if eventID == "" {
@@ -57,7 +68,7 @@ func deleteEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	eventController := controllers.NewEventController()
-	err := eventController.DeleteEvent(calendarID, eventID)
+	err = eventController.DeleteEvent(calendarID, eventID)
 	if err != nil {
 		newError := errorObj{Message: "Unable to delete event. " + err.Error(), Resource: "Google calendar Event"}
 		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal Server Error", Status: http.StatusInternalServerError}
@@ -83,8 +94,19 @@ func updateEvent(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	calendarID := "k352nehms8mbf0hbe69jat2qig@group.calendar.google.com"
+	userID := r.URL.Query().Get("id")
 	eventID := r.URL.Query().Get("id")
+	user, err := getUser(userID)
+
+	if err != nil {
+		newError := errorObj{Message: err.Error(), Resource: "Users"}
+		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal server error", Status: http.StatusInternalServerError}
+		writeJSON(w, json)
+		fmt.Println(err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// get Calendar id of the user
+	calendarID := user.CalendarID
 
 	// creating error json object to be passed with the response if the eventid is not provided
 	if eventID == "" {
@@ -111,7 +133,7 @@ func updateEvent(w http.ResponseWriter, r *http.Request) {
 	// pass the memory address of the body object
 	// this will populate the struct with the values from the request body
 	// any field that is not in the request body will have its default value ex: for string it will be "" for arrays it will be []
-	err := json.NewDecoder(r.Body).Decode(&body)
+	err = json.NewDecoder(r.Body).Decode(&body)
 
 	if err != nil {
 		newError := errorObj{Message: "Unable to parse request body . " + err.Error(), Resource: "Google calendar Event"}
@@ -188,8 +210,19 @@ func getEvent(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	calendarID := "k352nehms8mbf0hbe69jat2qig@group.calendar.google.com"
+	userID := r.URL.Query().Get("id")
 	eventID := r.URL.Query().Get("id")
+	user, err := getUser(userID)
+
+	if err != nil {
+		newError := errorObj{Message: err.Error(), Resource: "Users"}
+		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal server error", Status: http.StatusInternalServerError}
+		writeJSON(w, json)
+		fmt.Println(err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// get Calendar id of the user
+	calendarID := user.CalendarID
 
 	// creating error json object to be passed with the response if the eventid is not provided
 	if eventID == "" {
@@ -214,7 +247,8 @@ func getEvent(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, json)
 }
 
-func eventListHandler(w http.ResponseWriter, r *http.Request) {
+//EventListHandler handles /events/list route and returns list of events
+func EventListHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		// creating an error json object to be passed to the http response
 		newError := errorObj{Message: "Only Get requests are allowed", Resource: "Google Calendar list events"}
@@ -234,7 +268,19 @@ func eventListHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	calendarID := "k352nehms8mbf0hbe69jat2qig@group.calendar.google.com"
+	userID := r.URL.Query().Get("id")
+	user, err := getUser(userID)
+
+	if err != nil {
+		newError := errorObj{Message: err.Error(), Resource: "Users"}
+		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal server error", Status: http.StatusInternalServerError}
+		writeJSON(w, json)
+		fmt.Println(err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// get Calendar id of the user
+	calendarID := user.CalendarID
+
 	eventController := controllers.NewEventController()
 	calendarTitle, events, err := eventController.ListEvents(calendarID)
 

@@ -10,7 +10,8 @@ import (
 	"reflect"
 )
 
-func taskHandler(w http.ResponseWriter, r *http.Request) {
+//TaskHandler handles /tasks route and perform all CRUD operations based on method type
+func TaskHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		getTaskHandler(w, r)
 		return
@@ -30,11 +31,11 @@ func taskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// creating an error json object to be passed to the http response
-	newError := errorObj{Message: "Only Get,Delete,Put requests are allowed", Resource: "Calendar Event"}
+	newError := errorObj{Message: "Only Get,Delete,Put,Post requests are allowed", Resource: "Task"}
 	json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Request method not allowed ", Status: http.StatusMethodNotAllowed}
 	writeJSON(w, json)
-	fmt.Println("Only Get,Delete,Put requests are allowed", http.StatusMethodNotAllowed)
-	return
+	fmt.Println("Only Get,Delete,Put,Post requests are allowed", http.StatusMethodNotAllowed)
+
 }
 
 func insertTaskHandler(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +65,7 @@ func insertTaskHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json := successJSONObj{Status: http.StatusCreated, Message: "Taks added successfully", Results: map[string]string{"id": id.String()}}
+	json := successJSONObj{Status: http.StatusCreated, Message: "Task added successfully", Results: map[string]string{"id": id.String()}}
 	writeJSON(w, json)
 }
 
@@ -168,12 +169,13 @@ func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	updatedTaskDataMap := make(map[string]string)
 	// looping on struct and get all updated key value pairs passed by the user
 	values := reflect.ValueOf(updatedTaskdata)
-	fields := reflect.TypeOf(updatedTaskDataMap)
+	fields := reflect.TypeOf(updatedTaskdata)
 	tempintslice := []int{0}
 	ielements := reflect.ValueOf(updatedTaskdata).NumField()
 
 	for i := 0; i < ielements; i++ {
 		v := values.Field(i).Interface()
+		// fmt.Println(v)
 		if v != "" {
 			tempintslice[0] = i
 			f := fields.FieldByIndex(tempintslice)

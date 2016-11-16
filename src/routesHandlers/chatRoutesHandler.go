@@ -7,8 +7,8 @@ import (
 	"net/http"
 )
 
-// handles /welcome and respond with generated UUID
-func handleWelcome(w http.ResponseWriter, r *http.Request) {
+// HandleWelcome handles /welcome and respond with generated UUID
+func HandleWelcome(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		// creating an error json object to be passed to the http response
 		newError := errorObj{Message: "Only Get requests are allowed", Resource: "Welcome Chat"}
@@ -24,8 +24,8 @@ func handleWelcome(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// handle Handles / and respond with HTML Page
-func handle(w http.ResponseWriter, r *http.Request) {
+//Handle Handles / and respond with HTML Page
+func Handle(w http.ResponseWriter, r *http.Request) {
 	body :=
 		"<!DOCTYPE html><html><head><title>Chatbot</title></head><body><pre style=\"font-family: monospace;\">\n" +
 			"Available Routes:\n\n" +
@@ -37,7 +37,8 @@ func handle(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, body)
 }
 
-func handleChat(w http.ResponseWriter, r *http.Request) {
+//HandleChat handles chat route
+func HandleChat(w http.ResponseWriter, r *http.Request) {
 	// Make sure only POST requests are handled
 	if r.Method != http.MethodPost {
 		newError := errorObj{Message: "Only POST requests are allowed", Resource: "Event Chat"}

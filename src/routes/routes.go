@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -16,17 +15,18 @@ func Routing(addr string) error {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/welcome", withLog(routesHandlers.handleWelcome))
-	mux.HandleFunc("/chat/event", withLog(routesHandlers.handleChat))
-	mux.HandleFunc("/events/list", withLog(routesHandlers.eventListHandler))
-	mux.HandleFunc("/events", withLog(routesHandlers.eventHandler))
-	mux.HandleFunc("/tasks", withLog(routesHandlers.taskHandler))
-	mux.HandleFunc("/", withLog(routesHandlers.handle))
+	mux.HandleFunc("/welcome", withLog(routesHandlers.HandleWelcome))
+	mux.HandleFunc("/chat/event", withLog(routesHandlers.HandleChat))
+	mux.HandleFunc("/events/list", withLog(routesHandlers.EventListHandler))
+	mux.HandleFunc("/events", withLog(routesHandlers.EventHandler))
+	mux.HandleFunc("/tasks", withLog(routesHandlers.TaskHandler))
+	mux.HandleFunc("/users", withLog(routesHandlers.UsersHandler))
+	mux.HandleFunc("/", withLog(routesHandlers.Handle))
 	// Start the server
 	return http.ListenAndServe(addr, cors.CORS(mux))
 }
 
-// withLog Wraps HandlerFuncs to log requests to Stdout
+//WithLog Wraps HandlerFuncs to log requests to Stdout
 func withLog(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		c := httptest.NewRecorder()
@@ -39,10 +39,4 @@ func withLog(fn http.HandlerFunc) http.HandlerFunc {
 		w.WriteHeader(c.Code)
 		c.Body.WriteTo(w)
 	}
-}
-
-// writeJSON Writes the JSON equivilant for data into ResponseWriter w
-func writeJSON(w http.ResponseWriter, data interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
 }
