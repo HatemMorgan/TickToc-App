@@ -5,6 +5,8 @@ import (
 
 	"fmt"
 
+	"strconv"
+
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -23,25 +25,25 @@ func NewTaskController(s *mgo.Session) *TaskController {
 }
 
 //InsertTask is responsible to add new task to database
-func (taskController TaskController) InsertTask(newTask models.Task) (models.Task, error) {
+func (taskController TaskController) InsertTask(newTask models.Task) (bson.ObjectId, error) {
 	// add an ID
 	newTask.ID = bson.NewObjectId()
 
 	// Write the task to mongo
 	err := taskController.session.DB("advanced_computer_lab").C("tasks").Insert(newTask)
 	if err != nil {
-		return models.Task{}, err
+		return "", fmt.Errorf("Unable to add new Task . %v ", err)
 	}
 
-	return newTask, nil
+	return newTask.ID, nil
 
 }
 
 //GetTask retrieves an individual task resource
-func (taskController TaskController) GetTask(id string) (bson.ObjectId, error) {
+func (taskController TaskController) GetTask(id string) (models.Task, error) {
 	// Verify id is ObjectId, otherwise return error
 	if !bson.IsObjectIdHex(id) {
-		return "", fmt.Errorf("Invalid ID")
+		return models.Task{}, fmt.Errorf("Invalid ID")
 	}
 	// Grab id
 	objectID := bson.ObjectIdHex(id)
@@ -51,10 +53,10 @@ func (taskController TaskController) GetTask(id string) (bson.ObjectId, error) {
 	err := taskController.session.DB("advanced_computer_lab").C("tasks").FindId(objectID).One(&task)
 
 	if err != nil {
-		return "", err
+		return models.Task{}, fmt.Errorf("Unable to get task with id: %s . %v", id, err)
 	}
 
-	return task.ID, nil
+	return task, nil
 }
 
 //RemoveTask removes an existing task resource
@@ -67,7 +69,7 @@ func (taskController TaskController) RemoveTask(id string) error {
 
 	err := taskController.session.DB("advanced_computer_lab").C("tasks").RemoveId(objectID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Unable to remove task with id: %s . %v", id, err)
 	}
 
 	return nil
@@ -87,9 +89,38 @@ func (taskController TaskController) UpdateTask(updatedMap map[string]string, id
 	model := bson.M{}
 
 	// iterating on the updated map to updated the old task
+
 	for key, value := range updatedMap {
+		// make sure that the field is a valid field for Task resource
+		fieldsMap := map[string]string{"title": "Title", "description": "Description", "startDateTime": "StartDateTime", "endDateTime": "EndDateTime", "latitude": "Latitude", "longitude": "Longitude"}
+		if _, ok := fieldsMap[key]; !ok {
+			return fmt.Errorf("Invalid Field with this name: %s", key)
+		}
+		// check if the updated value is the longitude of location to update the location object
+		if key == "longitude" {
+			model["location.longitude"] = value
+			continue
+		}
+
+		if key == "latitude" {
+			model["location.latitude"] = value
+			continue
+		}
+		// casting from string to int64 because the data type of startdatetime and enddatetime is int64
+		if key == "startdatetime" || key == "enddatetime" {
+			num, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return fmt.Errorf("Wrong Date format . Date must be converted to milliseconds (long int) ")
+			}
+			fmt.Println(num)
+			model[key] = num
+			continue
+		}
+		// if the key is not longitude or latitude so it is a field in the document being updated so update the value
+		// of the field crossponding to the key given
 		model[key] = value
 	}
+	fmt.Println(model)
 	// updating the old task by the new values
 	err := taskController.session.DB("advanced_computer_lab").C("tasks").UpdateId(objectID, bson.M{"$set": model})
 	if err != nil {

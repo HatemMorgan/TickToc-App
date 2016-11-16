@@ -1,17 +1,13 @@
 package main
 
 import (
-	"time"
+	"fmt"
 
 	mgo "gopkg.in/mgo.v2"
 
 	// Autoload environment variables in .env
 
-	"models"
-
 	"controllers"
-
-	"fmt"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -74,23 +70,79 @@ func main() {
 	// GoogleCalendarcontroller.DeleteEvent("k352nehms8mbf0hbe69jat2qig@group.calendar.google.com", "j518p4bcagq8kt1717vvmb8bf0")
 
 	// manual testing for tasks
-	newTask := models.Task{
-		Title:         "Embedded Quiz",
-		Description:   "Sheet 6 and 7 Embedded C",
-		StartDateTime: time.Now().UnixNano() / int64(time.Millisecond),
-		EndDateTime:   time.Now().UnixNano() / int64(time.Millisecond),
-		Location: models.Location{
-			Latitude:  "0.002",
-			Longitude: "-0.23324",
-		},
-	}
 
-	taskController := controllers.NewTaskController(getSession())
-	task, err := taskController.InsertTask(newTask)
+	// taskController := controllers.NewTaskController(getSession())
+
+	// newTask := models.Task{
+	// 	Title:         "Project Advanced Computer Lab",
+	// 	Description:   "Full Backend server using go language",
+	// 	StartDateTime: time.Now().UnixNano() / int64(time.Millisecond),
+	// 	EndDateTime:   time.Now().UnixNano() / int64(time.Millisecond),
+	// 	Location: models.Location{
+	// 		Latitude:  "0.002",
+	// 		Longitude: "-0.23324",
+	// 	},
+	// }
+	// id, err := taskController.InsertTask(newTask)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println(id)
+
+	// a := time.Now().UnixNano() / int64(time.Millisecond)
+	// updateTaskMap := map[string]string{"Title": "Project Advanced Computer Lab deadline", "EndDateTime": strconv.FormatInt(a, 10), "Longitude": "0.222223"}
+	// err := taskController.UpdateTask(updateTaskMap, "582bbb6b8a4e9e46c7df713e")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// task, err := taskController.GetTask("582bbb6b8a4e9e46c7df713e")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println(task)
+
+	// err := taskController.RemoveTask("582bb9878a4e9e30c301f184")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+
+	// manual test for users
+	userController := controllers.NewUserController(getSession())
+
+	// newUser := models.User{
+	// 	FirstName:  "Hatem",
+	// 	LastName:   "Morgan",
+	// 	Email:      "hatemmorgan17@gmail.com",
+	// 	CalendarID: "k352nehms8mbf0hbe69jat2qig@group.calendar.google.com",
+	// }
+	// id, err := userController.InsertTask(newUser)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println(id)
+
+	// user, err := userController.GetUser("582bc2878a4e9e228731ad56")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println(user)
+
+	// err := userController.RemoveUser("582bc2878a4e9e228731ad56")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+
+	updateUserMap := map[string]string{"lastName": "Elsayed", "ko": "ok"}
+	err := userController.UpdateUser(updateUserMap, "582bc3458a4e9e29e1a54439")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(task)
-
 }

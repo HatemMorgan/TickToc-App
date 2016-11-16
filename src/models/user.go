@@ -12,3 +12,10 @@ type (
 		CalendarID string        `json:"calendarID" bson:"calendarID"`
 	}
 )
+
+//IsValidField checks if fieldName is a valid field or not
+func (user User) IsValidField(fieldName string) bool {
+	fieldsMap := map[string]string{"firstName": "FirstName", "lastName": "LastName", "email": "Email", "calenarID": "CalendarID"}
+	_, ok := fieldsMap[fieldName]
+	return ok
+}
