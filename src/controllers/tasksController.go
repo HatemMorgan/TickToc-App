@@ -90,7 +90,7 @@ func (taskController TaskController) UpdateTask(updatedMap map[string]string, id
 	// iterating on the updated map to updated the old task
 
 	for key, value := range updatedMap {
-		fmt.Println(key)
+
 		// make sure that the field is a valid field for Task resource
 		fieldsMap := map[string]string{"Title": "title", "Description": "description", "StartDateTime": "startDateTime", "EndDateTime": "endDateTime", "Latitude": "latitude", "Longitude": "longitude"}
 		if _, ok := fieldsMap[key]; !ok {
@@ -106,22 +106,25 @@ func (taskController TaskController) UpdateTask(updatedMap map[string]string, id
 			model["location.latitude"] = value
 			continue
 		}
+
 		// casting from string to int64 because the data type of startdatetime and enddatetime is int64
 		if key == "StartDateTime" || key == "EndDateTime" {
 			num, err := strconv.ParseInt(value, 10, 64)
 			if err != nil {
 				return fmt.Errorf("Wrong Date format . Date must be converted to milliseconds (long int) ")
 			}
-			fmt.Println(num)
-			model[key] = num
+			if num != 0 {
+				model[fieldsMap[key]] = num
+			}
 			continue
+
 		}
 		// if the key is not longitude or latitude so it is a field in the document being updated so update the value
 		// of the field crossponding to the key given
 		k := fieldsMap[key]
 		model[k] = value
 	}
-	fmt.Println(model)
+	// fmt.Println(model)
 	// updating the old task by the new values
 	err := taskController.Session.DB("advanced_computer_lab").C("tasks").UpdateId(objectID, bson.M{"$set": model})
 	if err != nil {

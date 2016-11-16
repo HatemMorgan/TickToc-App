@@ -8,6 +8,7 @@ import (
 	"models"
 	"net/http"
 	"reflect"
+	"strconv"
 )
 
 //TaskHandler handles /tasks route and perform all CRUD operations based on method type
@@ -183,6 +184,26 @@ func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 			_, ok := v.(string)
 			if ok {
 				updatedTaskDataMap[f.Name] = v.(string)
+				continue
+			}
+
+			if _, ok := v.(int64); ok {
+				updatedTaskDataMap[f.Name] = strconv.FormatInt(v.(int64), 10)
+				continue
+			}
+
+			if _, ok := v.(models.Location); ok {
+				location := v.(models.Location)
+				if location.Latitude != "" {
+					updatedTaskDataMap["Latitude"] = location.Latitude
+					continue
+				}
+
+				if location.Longitude != "" {
+					updatedTaskDataMap["Longitude"] = location.Longitude
+					continue
+				}
+
 			}
 		}
 	}
