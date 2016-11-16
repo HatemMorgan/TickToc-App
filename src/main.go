@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"routes"
 
 	mgo "gopkg.in/mgo.v2"
 
 	// Autoload environment variables in .env
-
-	"controllers"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -25,16 +26,17 @@ func getSession() *mgo.Session {
 
 func main() {
 
-	// // Use the PORT environment variable
-	// port := os.Getenv("PORT")
-	// // Default to 3000 if no PORT environment variable was defined
-	// if port == "" {
-	// 	port = "3000"
-	// }
-	// // Start the server
-	// fmt.Printf("Listening on port %s...\n", port)
-	// log.Fatalln(routes.Routing(":" + port))
+	// Use the PORT environment variable
+	port := os.Getenv("PORT")
+	// Default to 3000 if no PORT environment variable was defined
+	if port == "" {
+		port = "3000"
+	}
+	// Start the server
+	fmt.Printf("Listening on port %s...\n", port)
+	log.Fatalln(routes.Routing(":" + port))
 
+	// --------------------------------------------------------------------------------------------------------------------------------
 	// Manually Testing for events
 
 	// a := time.Now().UnixNano() / int64(time.Millisecond)
@@ -111,7 +113,7 @@ func main() {
 	// }
 
 	// manual test for users
-	userController := controllers.NewUserController(getSession())
+	// userController := controllers.NewUserController(getSession())
 
 	// newUser := models.User{
 	// 	FirstName:  "Hatem",
@@ -139,10 +141,10 @@ func main() {
 	// 	return
 	// }
 
-	updateUserMap := map[string]string{"lastName": "Elsayed", "ko": "ok"}
-	err := userController.UpdateUser(updateUserMap, "582bc3458a4e9e29e1a54439")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	// updateUserMap := map[string]string{"lastName": "Elsayed", "ko": "ok"}
+	// err := userController.UpdateUser(updateUserMap, "582bc3458a4e9e29e1a54439")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
 }
