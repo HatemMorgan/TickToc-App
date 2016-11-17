@@ -7,6 +7,8 @@ import (
 
 	"strings"
 
+	"db"
+
 	calendar "google.golang.org/api/calendar/v3"
 )
 
@@ -80,9 +82,14 @@ func (ec EventController) InsertEvent(newEventMap map[string]string, attendeesEm
 		Attendees: attendees,
 		Organizer: &calendar.EventOrganizer{Email: newEventMap["organizerEmail"]},
 	}
-
-	calendarID := newEventMap["calenderID"]
-
+	userController := NewUserController(db.GetSession())
+	user, err := userController.GetUser(newEventMap["userID"])
+	if err != nil {
+		fmt.Println(err)
+		return calendar.Event{}, fmt.Errorf("Unable to get user wrong userID %v", err)
+	}
+	calendarID := user.CalendarID
+	fmt.Println("calendar ID = ", calendarID)
 	eventInsertCall := srv.Events.Insert(calendarID, newEvent)
 	// send notification to attendees by email
 	eventInsertCall.SendNotifications(true)
@@ -91,7 +98,7 @@ func (ec EventController) InsertEvent(newEventMap map[string]string, attendeesEm
 
 	if err != nil {
 		log.Fatalf("Unable to create event. %v\n", err)
-		return *event, err
+		return calendar.Event{}, err
 	}
 	fmt.Println("event added  ", event)
 	fmt.Println("event ID = ", event.Id)

@@ -16,7 +16,8 @@ func Routing(addr string) error {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/welcome", withLog(routesHandlers.HandleWelcome))
-	mux.HandleFunc("/chat/event", withLog(routesHandlers.HandleChat))
+	mux.HandleFunc("/chat/event", withLog(routesHandlers.HandleEventChat))
+	mux.HandleFunc("/chat/task", withLog(routesHandlers.HandleTaskChat))
 	mux.HandleFunc("/events/list", withLog(routesHandlers.EventListHandler))
 	mux.HandleFunc("/events", withLog(routesHandlers.EventHandler))
 	mux.HandleFunc("/tasks", withLog(routesHandlers.TaskHandler))

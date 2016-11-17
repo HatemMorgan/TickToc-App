@@ -11,6 +11,7 @@ type (
 		StartDateTime int64         `json:"startDateTime" bson:"startDateTime"`
 		EndDateTime   int64         `json:"endDateTime" bson:"endDateTime"`
 		Location      Location      `json:"location" bson:"location"`
+		UserID        bson.ObjectId `json:"userID" bson:"userID"`
 	}
 
 	//Location represent location of a task

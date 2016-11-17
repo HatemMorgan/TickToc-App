@@ -45,7 +45,7 @@ func deleteEvent(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	userID := r.URL.Query().Get("id")
+	userID := r.URL.Query().Get("userID")
 	eventID := r.URL.Query().Get("id")
 	user, err := getUser(userID)
 
@@ -94,7 +94,7 @@ func updateEvent(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	userID := r.URL.Query().Get("id")
+	userID := r.URL.Query().Get("userID")
 	eventID := r.URL.Query().Get("id")
 	user, err := getUser(userID)
 
@@ -210,8 +210,9 @@ func getEvent(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	userID := r.URL.Query().Get("id")
+	userID := r.URL.Query().Get("userID")
 	eventID := r.URL.Query().Get("id")
+	fmt.Println(userID, eventID)
 	user, err := getUser(userID)
 
 	if err != nil {
@@ -268,7 +269,7 @@ func EventListHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	userID := r.URL.Query().Get("id")
+	userID := r.URL.Query().Get("userID")
 	user, err := getUser(userID)
 
 	if err != nil {
