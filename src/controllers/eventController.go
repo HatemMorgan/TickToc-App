@@ -1,18 +1,29 @@
-package googleCalendarcontroller
+package controllers
 
 import (
 	"calendarAuth"
+	"fmt"
 	"log"
 
-	"fmt"
-
 	"strings"
+
+	"db"
 
 	calendar "google.golang.org/api/calendar/v3"
 )
 
+type (
+	//EventController represents the controller for operating on the events resourse
+	EventController struct{}
+)
+
+// NewEventController provides a reference to a EventController with provided
+func NewEventController() *EventController {
+	return &EventController{}
+}
+
 //GetCallenderList returns a list of all Calendars
-func GetCallenderList() {
+func (ec EventController) GetCallenderList() {
 	srv, err := calendarAuth.GetCalendarService()
 	listRes, err := srv.CalendarList.List().Fields("items/id").Do()
 	if err != nil {
@@ -39,7 +50,7 @@ func GetCallenderList() {
 }
 
 // InsertEvent takes the new event entry from user and create a new event then insert it using google calendar api
-func InsertEvent(newEventMap map[string]string, attendeesEmails []string) (calendar.Event, error) {
+func (ec EventController) InsertEvent(newEventMap map[string]string, attendeesEmails []string) (calendar.Event, error) {
 	// Getting the authenticated calendar service
 	srv, err := calendarAuth.GetCalendarService()
 
@@ -71,9 +82,14 @@ func InsertEvent(newEventMap map[string]string, attendeesEmails []string) (calen
 		Attendees: attendees,
 		Organizer: &calendar.EventOrganizer{Email: newEventMap["organizerEmail"]},
 	}
-
-	calendarID := newEventMap["calenderID"]
-
+	userController := NewUserController(db.GetSession())
+	user, err := userController.GetUser(newEventMap["userID"])
+	if err != nil {
+		fmt.Println(err)
+		return calendar.Event{}, fmt.Errorf("Unable to get user wrong userID %v", err)
+	}
+	calendarID := user.CalendarID
+	fmt.Println("calendar ID = ", calendarID)
 	eventInsertCall := srv.Events.Insert(calendarID, newEvent)
 	// send notification to attendees by email
 	eventInsertCall.SendNotifications(true)
@@ -82,7 +98,7 @@ func InsertEvent(newEventMap map[string]string, attendeesEmails []string) (calen
 
 	if err != nil {
 		log.Fatalf("Unable to create event. %v\n", err)
-		return *event, err
+		return calendar.Event{}, err
 	}
 	fmt.Println("event added  ", event)
 	fmt.Println("event ID = ", event.Id)
@@ -91,7 +107,7 @@ func InsertEvent(newEventMap map[string]string, attendeesEmails []string) (calen
 }
 
 //CreateAdvancedLabCalendar creates a new calendar for Advanced computer lab course
-func CreateAdvancedLabCalendar() (calendar.Calendar, error) {
+func (ec EventController) CreateAdvancedLabCalendar() (string, error) {
 	// Getting the authenticated calendar service
 	srv, err := calendarAuth.GetCalendarService()
 	if err != nil {
@@ -108,15 +124,14 @@ func CreateAdvancedLabCalendar() (calendar.Calendar, error) {
 	// Inserting new calendar
 	calendar, err := srv.Calendars.Insert(newCalendar).Do()
 	if err != nil {
-		log.Fatalf("Unable to create calendar. %v\n", err)
-		return *calendar, err
+		return "", fmt.Errorf("Unable to create calendar. %v\n", err)
 	}
 	fmt.Println("calendar created and calendar id = ", calendar.Id)
-	return *calendar, nil
+	return calendar.Id, nil
 }
 
 //DeleteCalendar deletes a calendar with a specific ID
-func DeleteCalendar(calendarID string) error {
+func (ec EventController) DeleteCalendar(calendarID string) error {
 	// Getting the authenticated calendar service
 	srv, err := calendarAuth.GetCalendarService()
 	if err != nil {
@@ -135,7 +150,7 @@ func DeleteCalendar(calendarID string) error {
 }
 
 //UpdateEvent it updates a specific event
-func UpdateEvent(calendarID, eventID string, newAttendees []string, deletedAttendees map[string]string, updatedEventMap map[string]string) (calendar.Event, error) {
+func (ec EventController) UpdateEvent(calendarID, eventID string, newAttendees []string, deletedAttendees map[string]string, updatedEventMap map[string]string) (calendar.Event, error) {
 	// Getting the authenticated calendar service
 	srv, err := calendarAuth.GetCalendarService()
 	if err != nil {
@@ -213,7 +228,7 @@ func UpdateEvent(calendarID, eventID string, newAttendees []string, deletedAtten
 }
 
 //ListEvents list all events in a specific calendar
-func ListEvents(calendarID string) (string, []*calendar.Event, error) {
+func (ec EventController) ListEvents(calendarID string) (string, []*calendar.Event, error) {
 	// Getting the authenticated calendar service
 	srv, err := calendarAuth.GetCalendarService()
 	if err != nil {
@@ -244,7 +259,7 @@ func ListEvents(calendarID string) (string, []*calendar.Event, error) {
 }
 
 //GetEvent gets an event
-func GetEvent(calendarID, eventID string) (calendar.Event, error) {
+func (ec EventController) GetEvent(calendarID, eventID string) (calendar.Event, error) {
 	// Getting the authenticated calendar service
 	srv, err := calendarAuth.GetCalendarService()
 	if err != nil {
@@ -267,7 +282,7 @@ func GetEvent(calendarID, eventID string) (calendar.Event, error) {
 }
 
 //DeleteEvent deletes an event
-func DeleteEvent(calendarID, eventID string) error {
+func (ec EventController) DeleteEvent(calendarID, eventID string) error {
 	// Getting the authenticated calendar service
 	srv, err := calendarAuth.GetCalendarService()
 	if err != nil {

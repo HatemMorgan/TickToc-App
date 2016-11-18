@@ -1,118 +1,61 @@
 package main
 
-import (
-	"chatbot"
+import
+
+// Autoload environment variables in .env
+
+(
 	"fmt"
-	"googleCalendarcontroller"
 	"log"
 	"os"
 	"routes"
-	"strconv"
-	"strings"
-
-	// Autoload environment variables in .env
 
 	_ "github.com/joho/godotenv/autoload"
 )
 
-var x = -1
-var attendeesEmails []string
-
-func chatbotProcess(session chatbot.Session, message string) (string, error) {
-
-	if strings.EqualFold(message, "add") {
-		session = make(map[string]string)
-		x = 0
-	}
-
-	if strings.EqualFold(message, "again") {
-		x = -1
-		return fmt.Sprintf("%s", "If you want to add events, type 'add'!"), nil
-	}
-
-	if strings.EqualFold(message, "done") {
-		x = -1
-		googleCalendarcontroller.InsertEvent(session, attendeesEmails)
-		return fmt.Sprintf("%s", "If you want to add another events, type 'add'!"), nil
-
-	}
-
-	switch x {
-	case 0:
-		x = 1
-		return fmt.Sprintf("%s", "Please enter the title of the event"), nil
-	case 1:
-		session["title"] = message
-		x = 2
-		return fmt.Sprintf("%s", "Please enter the description of the event"), nil
-	case 2:
-		session["description"] = message
-		x = 3
-		return fmt.Sprintf("%s", "Please enter the start dateTime of the event"), nil
-	case 3:
-		session["startDateTime"] = message
-		x = 4
-		return fmt.Sprintf("%s", "Please enter the end dateTime of the event"), nil
-	case 4:
-		session["endDateTime"] = message
-		x = 5
-		return fmt.Sprintf("%s", "Please enter the location of the event"), nil
-	case 5:
-		session["location"] = message
-		x = 6
-		return fmt.Sprintf("%s", "Please enter the organizer email of the event"), nil
-	case 6:
-		session["organizerEmail"] = message
-		x = 7
-		return fmt.Sprintf("%s", "Please enter the attendees email of the event and split the emails with - "), nil
-	case 7:
-		session["attendeesEmails"] = message
-		x = 8
-		return fmt.Sprintf("%s", "Please choose a calendar to add the event to it"), nil
-	case 8:
-		session["calenderID"] = message
-
-		attendeesEmails = strings.Split(session["attendeesEmails"], "-")
-		fmt.Println(len(attendeesEmails))
-		var attendees = " "
-
-		for i, v := range attendeesEmails {
-			attendees += " " + strconv.Itoa(i+1) + "- " + v + " "
-		}
-
-		var event = "Title: " + session["title"] + " , Description: " + session["description"] + " ,Start DateTime: " + session["startDateTime"] + " , End DateTime: " + session["endDateTime"] + " ,Location: " + session["location"] + " , Organizer email: " + session["organizerEmail"] + " , Attendees emails: " + attendees + " , Calender type: " + session["calenderID"]
-
-		return fmt.Sprintf("So your event is " + event + " . Either type done to add it or type again to re-add it ."), nil
-		// return fmt.Sprintf("%s", "This event is done! Either type 'add' or 'done'!"), nil
-
-	default:
-		return "", fmt.Errorf("%s", "Invalid text!")
-
-	}
-
-	// 	if strings.EqualFold(message, "chatbot") {
-	// 		return "", fmt.Errorf("This can't be, I'm the one and only %s!", message)
-	// 	}
-
-	// 	return fmt.Sprintf("Hello %s, my name is chatbot. What was yours again?", message), nil
-}
-
 func main() {
-	// Uncomment the following lines to customize the chatbot
-	// chatbot.WelcomeMessage = "What's your name?"
-	chatbot.WelcomeMessage = "Tick-tock, Whenever you want to add an event, just type 'add'!"
-	chatbot.ProcessFunc(chatbotProcess)
 
 	// Use the PORT environment variable
 	port := os.Getenv("PORT")
 	// Default to 3000 if no PORT environment variable was defined
 	if port == "" {
-		port = "3000"
+		port = "4000"
 	}
-
 	// Start the server
 	fmt.Printf("Listening on port %s...\n", port)
 	log.Fatalln(routes.Routing(":" + port))
+
+	//--------------------------------------------------------------------------------------------------------------------------------
+	// hasher := md5.New()
+	// hasher.Write([]byte(strconv.FormatInt(time.Now().Unix(), 10)))
+	// uuid := hex.EncodeToString(hasher.Sum(nil))
+	// userID := "582bf5e88a4e9e1d45dbdf05"
+	// sessionModel := controllers.NewSessionModel(db.GetSession())
+	// // sessionModel.InsertNewSession(uuid, userID)
+
+	// session, err := sessionModel.GetSession("582bc3458a4e9e29e1a54439")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// } else {
+	// 	fmt.Println(session)
+	// }
+	// fmt.Println("--------------------------------------------------------------------")
+	// session, err = sessionModel.GetSession("582bf5e88a4e9e1d45dbdf05")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// } else {
+	// 	fmt.Println(session)
+	// }
+
+	// fmt.Println(strconv.FormatInt(time.Now().Unix(), 10))
+	// fmt.Println(time.Now())
+	// fmt.Println(time.Now().UTC())
+
+	// --------------------------------------------------------------------------------------------------------------------------------
+	// Manually Testing for events
+
+	// a := time.Now().UnixNano() / int64(time.Millisecond)
+	// fmt.Printf("%d \n", a)
 
 	// testMap := make(map[string]string)
 	// testMap["title"] = "Cairo Party"
@@ -142,4 +85,81 @@ func main() {
 	// controller.GetControllerList()
 
 	// GoogleCalendarcontroller.DeleteEvent("k352nehms8mbf0hbe69jat2qig@group.calendar.google.com", "j518p4bcagq8kt1717vvmb8bf0")
+
+	// manual testing for tasks
+
+	// taskController := controllers.NewTaskController(getSession())
+
+	// newTask := models.Task{
+	// 	Title:         "Project Advanced Computer Lab",
+	// 	Description:   "Full Backend server using go language",
+	// 	StartDateTime: time.Now().UnixNano() / int64(time.Millisecond),
+	// 	EndDateTime:   time.Now().UnixNano() / int64(time.Millisecond),
+	// 	Location: models.Location{
+	// 		Latitude:  "0.002",
+	// 		Longitude: "-0.23324",
+	// 	},
+	// }
+	// id, err := taskController.InsertTask(newTask)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println(id)
+
+	// a := time.Now().UnixNano() / int64(time.Millisecond)
+	// updateTaskMap := map[string]string{"Title": "Project Advanced Computer Lab deadline", "EndDateTime": strconv.FormatInt(a, 10), "Longitude": "0.222223"}
+	// err := taskController.UpdateTask(updateTaskMap, "582bbb6b8a4e9e46c7df713e")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// task, err := taskController.GetTask("582bbb6b8a4e9e46c7df713e")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println(task)
+
+	// err := taskController.RemoveTask("582bb9878a4e9e30c301f184")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+
+	// manual test for users
+	// userController := controllers.NewUserController(getSession())
+
+	// newUser := models.User{
+	// 	FirstName:  "Hatem",
+	// 	LastName:   "Morgan",
+	// 	Email:      "hatemmorgan17@gmail.com",
+	// 	CalendarID: "k352nehms8mbf0hbe69jat2qig@group.calendar.google.com",
+	// }
+	// id, err := userController.InsertTask(newUser)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println(id)
+
+	// user, err := userController.GetUser("582bc2878a4e9e228731ad56")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println(user)
+
+	// err := userController.RemoveUser("582bc2878a4e9e228731ad56")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+
+	// updateUserMap := map[string]string{"lastName": "Elsayed", "ko": "ok"}
+	// err := userController.UpdateUser(updateUserMap, "582bc3458a4e9e29e1a54439")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
 }
