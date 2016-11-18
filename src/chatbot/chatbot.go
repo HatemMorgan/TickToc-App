@@ -235,11 +235,11 @@ func taskchatbotProcess(session Session, message string) (string, error) {
 	case 2:
 		session["description"] = message
 		x = 3
-		return fmt.Sprintf("%s", "Please enter the start dateTime of your task"), nil
+		return fmt.Sprintf("%s", "Please enter the start dateTime of your task . ex: '1479261035690'"), nil
 	case 3:
 		session["startDateTime"] = message
 		x = 4
-		return fmt.Sprintf("%s", "Please enter the end dateTime of your task"), nil
+		return fmt.Sprintf("%s", "Please enter the end dateTime of your task  ex: '1479261035690'"), nil
 	case 4:
 		session["endDateTime"] = message
 		x = 5
@@ -300,11 +300,11 @@ func eventChatProcessor(session Session, message string) (string, error) {
 	case 2:
 		session["description"] = message
 		x = 3
-		return fmt.Sprintf("%s", "Please enter the start dateTime of the event"), nil
+		return fmt.Sprintf("%s", "Please enter the start dateTime of the event  ex: '2016-11-13T22:00:00-07:00'"), nil
 	case 3:
 		session["startDateTime"] = message
 		x = 4
-		return fmt.Sprintf("%s", "Please enter the end dateTime of the event"), nil
+		return fmt.Sprintf("%s", "Please enter the end dateTime of the event  ex: '2016-11-13T22:00:00-07:00'"), nil
 	case 4:
 		session["endDateTime"] = message
 		x = 5
