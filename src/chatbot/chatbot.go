@@ -101,18 +101,26 @@ func Welcome(userID string) map[string]string {
 }
 
 //CheckIfAuthenticated checks if the user has a session opened and his uuid is valid
-func CheckIfAuthenticated(uuid string) bool {
+func CheckIfAuthenticated(uuid, userID string) bool {
 	// Make sure a session exists for the extracted UUID
-	_, sessionFound := sessions[uuid]
-	return sessionFound
+
+	sessionModel := controllers.NewSessionModel(db.GetSession())
+	defer sessionModel.DBSession.Close()
+
+	_, err := sessionModel.GetSessionByUUID(userID, uuid)
+
+	if err != nil {
+		return false
+	}
+
+	return true
 }
 
 //EventChat is called by chat/event route handler to save message and return the new question
 func EventChat(uuid, userID string, data map[string]string) (map[string]string, error) {
 
-	// gets user session
-	session, _ := sessions[uuid]
-
+	// create a new session map to save users answers
+	session := make(map[string]string)
 	// add user id to the session
 	session["userID"] = userID
 	// set processor to EventChatProcessor
@@ -134,8 +142,8 @@ func EventChat(uuid, userID string, data map[string]string) (map[string]string, 
 //TaskChat is called by chat/task route handler to save answer of question and return the new question
 func TaskChat(uuid, userID string, data map[string]string) (map[string]string, error) {
 
-	// gets user session
-	session, _ := sessions[uuid]
+	// create a new session map to save users answers
+	session := make(map[string]string)
 	session["userID"] = userID
 
 	// set processor to TaskChatProcessor

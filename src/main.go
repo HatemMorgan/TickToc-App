@@ -31,9 +31,9 @@ func main() {
 	// uuid := hex.EncodeToString(hasher.Sum(nil))
 	// userID := "582bf5e88a4e9e1d45dbdf05"
 	// sessionModel := controllers.NewSessionModel(db.GetSession())
-	// // sessionModel.InsertNewSession(uuid, userID)
+	// sessionModel.InsertNewSession(uuid, userID)
 
-	// session, err := sessionModel.GetSession("582bc3458a4e9e29e1a54439")
+	// session, err := sessionModel.GetSession("582bc3458a4e9e29e1a54439", "55709fa79159b7ae321503bb92301bfc")
 	// if err != nil {
 	// 	fmt.Println(err)
 	// } else {

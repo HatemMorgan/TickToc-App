@@ -83,7 +83,7 @@ func HandleEventChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAuthenticated := chatbot.CheckIfAuthenticated(uuid)
+	isAuthenticated := chatbot.CheckIfAuthenticated(uuid, userID)
 	if !isAuthenticated {
 		newError := errorObj{Message: "No session found for: " + uuid + " .", Resource: "Event Chat"}
 		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "unAuthorized access", Status: http.StatusUnauthorized}
@@ -162,7 +162,7 @@ func HandleTaskChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAuthenticated := chatbot.CheckIfAuthenticated(uuid)
+	isAuthenticated := chatbot.CheckIfAuthenticated(uuid, userID)
 	if !isAuthenticated {
 		newError := errorObj{Message: "No session found for: " + uuid + " .", Resource: "Task Chat"}
 		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "unAuthorized access", Status: http.StatusUnauthorized}
