@@ -120,7 +120,7 @@ func CheckIfAuthenticated(uuid, userID string) bool {
 func EventChat(uuid, userID string, data map[string]string) (map[string]string, error) {
 
 	// create a new session map to save users answers
-	session := make(map[string]string)
+	session := sessions[uuid]
 	// add user id to the session
 	session["userID"] = userID
 	// set processor to EventChatProcessor
@@ -130,6 +130,16 @@ func EventChat(uuid, userID string, data map[string]string) (map[string]string, 
 	message, err := processor(session, data["message"])
 	if err != nil {
 		return nil, err
+	}
+	// check if message is done which means that the user done with entering all the needed information
+	// so we will delete the map that holds the user data from the sessions global map
+	if message == "done" {
+		// Write a JSON containg the processed response
+		delete(sessions, uuid)
+		return map[string]string{
+			"message": "Your event has been created successfully ",
+		}, nil
+
 	}
 
 	// Write a JSON containg the processed response
@@ -143,7 +153,7 @@ func EventChat(uuid, userID string, data map[string]string) (map[string]string, 
 func TaskChat(uuid, userID string, data map[string]string) (map[string]string, error) {
 
 	// create a new session map to save users answers
-	session := make(map[string]string)
+	session := sessions[uuid]
 	session["userID"] = userID
 
 	// set processor to TaskChatProcessor
@@ -153,6 +163,15 @@ func TaskChat(uuid, userID string, data map[string]string) (map[string]string, e
 	message, err := processor(session, data["message"])
 	if err != nil {
 		return nil, err
+	}
+
+	if message == "done" {
+		delete(sessions, uuid)
+		fmt.Println("sessions---->", sessions)
+		return map[string]string{
+			"message": "Your individual task has been created successfully ",
+		}, nil
+
 	}
 
 	// Write a JSON containg the processed response
@@ -169,7 +188,7 @@ var attendeesEmails []string
 func taskchatbotProcess(session Session, message string) (string, error) {
 	taskController := controllers.NewTaskController(db.GetSession())
 	if strings.EqualFold(message, "add") {
-		session = make(map[string]string)
+		// session = make(map[string]string)
 		x = 0
 	}
 
@@ -197,8 +216,11 @@ func taskchatbotProcess(session Session, message string) (string, error) {
 			},
 			UserID: userID,
 		}
-		taskController.InsertTask(newTask)
-		return fmt.Sprintf("%s", "If you want to add another events, type 'add'!"), nil
+		_, err := taskController.InsertTask(newTask)
+		if err != nil {
+			return "", fmt.Errorf(err.Error())
+		}
+		return fmt.Sprintf("%v", newTask), nil
 
 	}
 
@@ -246,7 +268,7 @@ func taskchatbotProcess(session Session, message string) (string, error) {
 func eventChatProcessor(session Session, message string) (string, error) {
 	eventController := controllers.NewEventController()
 	if strings.EqualFold(message, "add") {
-		session = make(map[string]string)
+		// session = make(map[string]string)
 		x = 0
 	}
 
@@ -272,6 +294,7 @@ func eventChatProcessor(session Session, message string) (string, error) {
 		return fmt.Sprintf("%s", "Please enter the title of the event"), nil
 	case 1:
 		session["title"] = message
+		fmt.Println(session["title"])
 		x = 2
 		return fmt.Sprintf("%s", "Please enter the description of the event"), nil
 	case 2:
