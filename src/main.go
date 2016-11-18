@@ -1,12 +1,14 @@
 package main
 
-import (
+import
+
+// Autoload environment variables in .env
+
+(
 	"fmt"
 	"log"
 	"os"
 	"routes"
-
-	// Autoload environment variables in .env
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -22,6 +24,32 @@ func main() {
 	// Start the server
 	fmt.Printf("Listening on port %s...\n", port)
 	log.Fatalln(routes.Routing(":" + port))
+
+	//--------------------------------------------------------------------------------------------------------------------------------
+	// hasher := md5.New()
+	// hasher.Write([]byte(strconv.FormatInt(time.Now().Unix(), 10)))
+	// uuid := hex.EncodeToString(hasher.Sum(nil))
+	// userID := "582bf5e88a4e9e1d45dbdf05"
+	// sessionModel := controllers.NewSessionModel(db.GetSession())
+	// // sessionModel.InsertNewSession(uuid, userID)
+
+	// session, err := sessionModel.GetSession("582bc3458a4e9e29e1a54439")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// } else {
+	// 	fmt.Println(session)
+	// }
+	// fmt.Println("--------------------------------------------------------------------")
+	// session, err = sessionModel.GetSession("582bf5e88a4e9e1d45dbdf05")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// } else {
+	// 	fmt.Println(session)
+	// }
+
+	// fmt.Println(strconv.FormatInt(time.Now().Unix(), 10))
+	// fmt.Println(time.Now())
+	// fmt.Println(time.Now().UTC())
 
 	// --------------------------------------------------------------------------------------------------------------------------------
 	// Manually Testing for events
