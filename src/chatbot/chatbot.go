@@ -57,36 +57,70 @@ func ProcessFunc(p Processor) {
 }
 
 //Welcome is called by welcome handler route to generate an UUID
-func Welcome() map[string]string {
+func Welcome(userID string) map[string]string {
 	// Generate a UUID.
 	// bygeeb time stamp unix format and represent it in base 10
 	hasher := md5.New()
 	hasher.Write([]byte(strconv.FormatInt(time.Now().Unix(), 10)))
 	uuid := hex.EncodeToString(hasher.Sum(nil))
+	// fmt.Println(uuid)
 
-	// Create a session for this UUID
-	sessions[uuid] = Session{}
+	sessionModel := controllers.NewSessionModel(db.GetSession())
+	defer sessionModel.DBSession.Close()
 
+	// check if the user has an already opened session
+	session, err := sessionModel.GetSession(userID)
+	// if there is an error this means that this user has no sessions opened
+	if err != nil {
+		fmt.Println(err)
+		// Create a session for this UUID and added it to the database
+		_, err := sessionModel.InsertNewSession(uuid, userID)
+
+		if err != nil {
+			return map[string]string{
+				"error":   "Could not create a session key " + err.Error(),
+				"message": "",
+			}
+		}
+
+		sessions[session.UUID] = Session{}
+		// Write a JSON containg the welcome message and the generated UUID
+		return map[string]string{
+			"uuid":    session.UUID,
+			"message": WelcomeMessage,
+		}
+	}
+
+	sessions[session.UUID] = Session{}
 	// Write a JSON containg the welcome message and the generated UUID
 	return map[string]string{
-		"uuid":    uuid,
+		"uuid":    session.UUID,
 		"message": WelcomeMessage,
 	}
+
 }
 
 //CheckIfAuthenticated checks if the user has a session opened and his uuid is valid
-func CheckIfAuthenticated(uuid string) bool {
+func CheckIfAuthenticated(uuid, userID string) bool {
 	// Make sure a session exists for the extracted UUID
-	_, sessionFound := sessions[uuid]
-	return sessionFound
+
+	sessionModel := controllers.NewSessionModel(db.GetSession())
+	defer sessionModel.DBSession.Close()
+
+	_, err := sessionModel.GetSessionByUUID(userID, uuid)
+
+	if err != nil {
+		return false
+	}
+
+	return true
 }
 
 //EventChat is called by chat/event route handler to save message and return the new question
 func EventChat(uuid, userID string, data map[string]string) (map[string]string, error) {
 
-	// gets user session
-	session, _ := sessions[uuid]
-
+	// create a new session map to save users answers
+	session := make(map[string]string)
 	// add user id to the session
 	session["userID"] = userID
 	// set processor to EventChatProcessor
@@ -108,8 +142,8 @@ func EventChat(uuid, userID string, data map[string]string) (map[string]string, 
 //TaskChat is called by chat/task route handler to save answer of question and return the new question
 func TaskChat(uuid, userID string, data map[string]string) (map[string]string, error) {
 
-	// gets user session
-	session, _ := sessions[uuid]
+	// create a new session map to save users answers
+	session := make(map[string]string)
 	session["userID"] = userID
 
 	// set processor to TaskChatProcessor

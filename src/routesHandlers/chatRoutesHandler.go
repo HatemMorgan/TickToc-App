@@ -9,6 +9,7 @@ import (
 
 // HandleWelcome handles /welcome and respond with generated UUID
 func HandleWelcome(w http.ResponseWriter, r *http.Request) {
+
 	if r.Method != http.MethodGet {
 		// creating an error json object to be passed to the http response
 		newError := errorObj{Message: "Only Get requests are allowed", Resource: "Welcome Chat"}
@@ -17,7 +18,19 @@ func HandleWelcome(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Only Get requests are allowed.", http.StatusMethodNotAllowed)
 		return
 	}
-	res := chatbot.Welcome()
+
+	// reading the userid from the url query string
+	userID := r.URL.Query().Get("userID")
+	// creating error json object to be passed with the response if the userID is not provided
+	if userID == "" {
+		newError := errorObj{Message: "ID of User must be provided as a query parameter with key = id ex:(?id=userID)", Resource: "Welcome chat"}
+		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Bad Request", Status: http.StatusBadRequest}
+		writeJSON(w, json)
+		fmt.Println("ID of User must be provided as a query parameter with key = id ex:(?id=userID)", http.StatusBadRequest)
+		return
+	}
+
+	res := chatbot.Welcome(userID)
 	json := successSingleJSONObj{Status: http.StatusOK, Message: "OK", Results: []map[string]string{res}}
 
 	writeJSON(w, json)
@@ -39,6 +52,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 
 //HandleEventChat handles event chat route
 func HandleEventChat(w http.ResponseWriter, r *http.Request) {
+
 	// Make sure only POST requests are handled
 	if r.Method != http.MethodPost {
 		newError := errorObj{Message: "Only POST requests are allowed", Resource: "Event Chat"}
@@ -58,7 +72,18 @@ func HandleEventChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAuthenticated := chatbot.CheckIfAuthenticated(uuid)
+	// reading the userid from the url query string
+	userID := r.URL.Query().Get("userID")
+	// creating error json object to be passed with the response if the userID is not provided
+	if userID == "" {
+		newError := errorObj{Message: "ID of User must be provided as a query parameter with key = id ex:(?id=userID)", Resource: "Event chat"}
+		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Bad Request", Status: http.StatusBadRequest}
+		writeJSON(w, json)
+		fmt.Println("ID of User must be provided as a query parameter with key = id ex:(?id=userID)", http.StatusBadRequest)
+		return
+	}
+
+	isAuthenticated := chatbot.CheckIfAuthenticated(uuid, userID)
 	if !isAuthenticated {
 		newError := errorObj{Message: "No session found for: " + uuid + " .", Resource: "Event Chat"}
 		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "unAuthorized access", Status: http.StatusUnauthorized}
@@ -88,17 +113,6 @@ func HandleEventChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// reading the userid from the url query string
-	userID := r.URL.Query().Get("userID")
-	// creating error json object to be passed with the response if the userID is not provided
-	if userID == "" {
-		newError := errorObj{Message: "ID of User must be provided as a query parameter with key = id ex:(?id=userID)", Resource: "Event chat"}
-		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Bad Request", Status: http.StatusBadRequest}
-		writeJSON(w, json)
-		fmt.Println("ID of User must be provided as a query parameter with key = id ex:(?id=userID)", http.StatusBadRequest)
-		return
-	}
-
 	res, err := chatbot.EventChat(uuid, userID, data)
 
 	if err != nil {
@@ -117,6 +131,7 @@ func HandleEventChat(w http.ResponseWriter, r *http.Request) {
 
 //HandleTaskChat handles task chat route
 func HandleTaskChat(w http.ResponseWriter, r *http.Request) {
+
 	// Make sure only POST requests are handled
 	if r.Method != http.MethodPost {
 		newError := errorObj{Message: "Only POST requests are allowed", Resource: "Task Chat"}
@@ -136,7 +151,18 @@ func HandleTaskChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAuthenticated := chatbot.CheckIfAuthenticated(uuid)
+	// reading the userid from the url query string
+	userID := r.URL.Query().Get("userID")
+	// creating error json object to be passed with the response if the userID is not provided
+	if userID == "" {
+		newError := errorObj{Message: "ID of User must be provided as a query parameter with key = id ex:(?id=userID)", Resource: "Task chat"}
+		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Bad Request", Status: http.StatusBadRequest}
+		writeJSON(w, json)
+		fmt.Println("ID of User must be provided as a query parameter with key = id ex:(?id=userID)", http.StatusBadRequest)
+		return
+	}
+
+	isAuthenticated := chatbot.CheckIfAuthenticated(uuid, userID)
 	if !isAuthenticated {
 		newError := errorObj{Message: "No session found for: " + uuid + " .", Resource: "Task Chat"}
 		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "unAuthorized access", Status: http.StatusUnauthorized}
@@ -163,16 +189,6 @@ func HandleTaskChat(w http.ResponseWriter, r *http.Request) {
 		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Bad Request ", Status: http.StatusBadRequest}
 		writeJSON(w, json)
 		fmt.Println("Missing message key in body.", http.StatusBadRequest)
-		return
-	}
-	// reading the userid from the url query string
-	userID := r.URL.Query().Get("userID")
-	// creating error json object to be passed with the response if the userID is not provided
-	if userID == "" {
-		newError := errorObj{Message: "ID of User must be provided as a query parameter with key = id ex:(?id=userID)", Resource: "Task chat"}
-		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Bad Request", Status: http.StatusBadRequest}
-		writeJSON(w, json)
-		fmt.Println("ID of User must be provided as a query parameter with key = id ex:(?id=userID)", http.StatusBadRequest)
 		return
 	}
 
