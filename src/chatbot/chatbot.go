@@ -57,21 +57,47 @@ func ProcessFunc(p Processor) {
 }
 
 //Welcome is called by welcome handler route to generate an UUID
-func Welcome() map[string]string {
+func Welcome(userID string) map[string]string {
 	// Generate a UUID.
 	// bygeeb time stamp unix format and represent it in base 10
 	hasher := md5.New()
 	hasher.Write([]byte(strconv.FormatInt(time.Now().Unix(), 10)))
 	uuid := hex.EncodeToString(hasher.Sum(nil))
+	// fmt.Println(uuid)
 
-	// Create a session for this UUID
-	sessions[uuid] = Session{}
+	sessionModel := controllers.NewSessionModel(db.GetSession())
+	defer sessionModel.DBSession.Close()
 
+	// check if the user has an already opened session
+	session, err := sessionModel.GetSession(userID)
+	// if there is an error this means that this user has no sessions opened
+	if err != nil {
+		fmt.Println(err)
+		// Create a session for this UUID and added it to the database
+		_, err := sessionModel.InsertNewSession(uuid, userID)
+
+		if err != nil {
+			return map[string]string{
+				"error":   "Could not create a session key " + err.Error(),
+				"message": "",
+			}
+		}
+
+		sessions[session.UUID] = Session{}
+		// Write a JSON containg the welcome message and the generated UUID
+		return map[string]string{
+			"uuid":    session.UUID,
+			"message": WelcomeMessage,
+		}
+	}
+
+	sessions[session.UUID] = Session{}
 	// Write a JSON containg the welcome message and the generated UUID
 	return map[string]string{
-		"uuid":    uuid,
+		"uuid":    session.UUID,
 		"message": WelcomeMessage,
 	}
+
 }
 
 //CheckIfAuthenticated checks if the user has a session opened and his uuid is valid

@@ -35,7 +35,7 @@ func (sessionModel SessionModel) InsertNewSession(UUID string, userID string) (b
 	now := time.Now()
 	newSession.CreatedAt = now.UTC()
 
-	expireAt := now.Add(1 * time.Minute)
+	expireAt := now.Add(1 * time.Hour)
 	newSession.ExpireAt = expireAt.UTC()
 
 	// adding UUID and userID to newSession
