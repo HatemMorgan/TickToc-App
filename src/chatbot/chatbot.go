@@ -74,12 +74,14 @@ func Welcome(userID string) map[string]string {
 	if err != nil {
 		fmt.Println(err)
 		// Create a session for this UUID and added it to the database
-		_, err := sessionModel.InsertNewSession(uuid, userID)
+		NewSession, err := sessionModel.InsertNewSession(uuid, userID)
 
 		if err != nil {
+			sessions[NewSession.UUID] = Session{}
+			// Write a JSON containg the welcome message and the generated UUID
 			return map[string]string{
-				"error":   "Could not create a session key " + err.Error(),
-				"message": "",
+				"uuid":    NewSession.UUID,
+				"message": WelcomeMessage,
 			}
 		}
 

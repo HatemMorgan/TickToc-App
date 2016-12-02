@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"models"
+	"time"
 
 	"fmt"
 
@@ -134,7 +135,25 @@ func (taskController TaskController) UpdateTask(updatedMap map[string]string, id
 	return nil
 }
 
-// //ListTasks lists all tasks
-// func ListTasks() ([]models.Task, error) {
+//ListTasks lists all tasks
+func (taskController TaskController) ListTasks(id string) ([]models.Task, error) {
+	// Verify id is ObjectId, otherwise return error
+	if !bson.IsObjectIdHex(id) {
+		return nil, fmt.Errorf("Invalid ID")
+	}
+	// Grab id
+	objectID := bson.ObjectIdHex(id)
 
-// }
+	// get tasks from mongo
+
+	now := time.Now().UTC()
+
+	tasks := []models.Task{}
+	err := taskController.Session.DB("advanced_computer_lab").C("tasks").Find(bson.M{"_id": objectID, "endDateTime": bson.M{"$gte": now}}).All(&tasks)
+
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get task with id: %s . %v", id, err)
+	}
+
+	return tasks, nil
+}

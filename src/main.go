@@ -88,11 +88,16 @@ func main() {
 
 	// manual testing for tasks
 
-	// taskController := controllers.NewTaskController(getSession())
-
+	// taskController := controllers.NewTaskController(db.GetSession())
+	// tasks, err := taskController.ListTasks("582bbb6b8a4e9e46c7df713e")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println(tasks)
 	// newTask := models.Task{
-	// 	Title:         "Project Advanced Computer Lab",
-	// 	Description:   "Full Backend server using go language",
+	// 	Title:         "Project Advanced Computer Lab Milstone 2",
+	// 	Description:   "Android Application",
 	// 	StartDateTime: time.Now().UnixNano() / int64(time.Millisecond),
 	// 	EndDateTime:   time.Now().UnixNano() / int64(time.Millisecond),
 	// 	Location: models.Location{

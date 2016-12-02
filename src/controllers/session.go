@@ -26,7 +26,7 @@ func NewSessionModel(s *mgo.Session) *SessionModel {
 }
 
 //InsertNewSession is responsible to add new session to database
-func (sessionModel SessionModel) InsertNewSession(UUID string, userID string) (bson.ObjectId, error) {
+func (sessionModel SessionModel) InsertNewSession(UUID string, userID string) (models.Session, error) {
 	newSession := models.Session{}
 	// add an ID
 	newSession.ID = bson.NewObjectId()
@@ -43,7 +43,7 @@ func (sessionModel SessionModel) InsertNewSession(UUID string, userID string) (b
 
 	// Verify id is ObjectId, otherwise return error
 	if !bson.IsObjectIdHex(userID) {
-		return "", fmt.Errorf("Invalid user ID")
+		return models.Session{}, fmt.Errorf("Invalid user ID")
 	}
 	// Grab id
 	objectUserID := bson.ObjectIdHex(userID)
@@ -52,10 +52,10 @@ func (sessionModel SessionModel) InsertNewSession(UUID string, userID string) (b
 	// Write the new session to mongo
 	err := sessionModel.DBSession.DB("advanced_computer_lab").C("sessions").Insert(newSession)
 	if err != nil {
-		return "", fmt.Errorf("Unable to add new Session . %v ", err)
+		return models.Session{}, fmt.Errorf("Unable to add new Session . %v ", err)
 	}
 
-	return newSession.ID, nil
+	return newSession, nil
 
 }
 
