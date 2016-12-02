@@ -59,7 +59,7 @@ func (sessionModel SessionModel) InsertNewSession(UUID string, userID string) (b
 
 }
 
-//GetSession retrieves an individual session resource related to a specific user
+//GetSession retrieves an individual session resource
 func (sessionModel SessionModel) GetSession(userID string) (models.Session, error) {
 	// Verify id is ObjectId, otherwise return error
 	if !bson.IsObjectIdHex(userID) {
@@ -71,26 +71,6 @@ func (sessionModel SessionModel) GetSession(userID string) (models.Session, erro
 	// get session from mongo
 	session := models.Session{}
 	err := sessionModel.DBSession.DB("advanced_computer_lab").C("sessions").Find(bson.M{"userID": objectUserID}).One(&session)
-
-	if err != nil {
-		return models.Session{}, fmt.Errorf("No session uuid available for this user: %s . %v", userID, err)
-	}
-
-	return session, nil
-}
-
-//GetSessionByUUID retrieves an individual session resource that has a specific UUID and UserID
-func (sessionModel SessionModel) GetSessionByUUID(userID, UUID string) (models.Session, error) {
-	// Verify id is ObjectId, otherwise return error
-	if !bson.IsObjectIdHex(userID) {
-		return models.Session{}, fmt.Errorf("Invalid ID")
-	}
-	// Grab id
-	objectUserID := bson.ObjectIdHex(userID)
-
-	// get session from mongo
-	session := models.Session{}
-	err := sessionModel.DBSession.DB("advanced_computer_lab").C("sessions").Find(bson.M{"userID": objectUserID, "UUID": UUID}).One(&session)
 
 	if err != nil {
 		return models.Session{}, fmt.Errorf("No session uuid available for this user: %s . %v", userID, err)
