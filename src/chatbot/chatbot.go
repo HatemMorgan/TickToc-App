@@ -202,8 +202,9 @@ func taskchatbotProcess(session Session, message string) (string, error) {
 
 	if strings.EqualFold(message, "done") && x == 6 {
 		x = -1
-		startDateTime, _ := strconv.ParseInt(session["startDateTime"], 10, 64)
-		endDateTime, _ := strconv.ParseInt(session["endDateTime"], 10, 64)
+		layout := "2006-01-02T15:04:05.000Z"
+		startDateTime, _ := time.Parse(layout, session["startDateTime"])
+		endDateTime, _ := time.Parse(layout, session["endDateTime"])
 
 		userID := bson.ObjectIdHex(session["userID"])
 
@@ -240,10 +241,23 @@ func taskchatbotProcess(session Session, message string) (string, error) {
 		return fmt.Sprintf("%s", "Please enter the start dateTime of your task . ex: '1479261035690'"), nil
 	case 3:
 		session["startDateTime"] = message
+
+		layout := "2006-01-02T15:04:05.000Z"
+		_, err := time.Parse(layout, session["startDateTime"])
+
+		if err != nil {
+			return fmt.Sprintf("%s", "Invalid date format  ex: '2016-12-02T07:37:00.933Z'"), nil
+		}
 		x = 4
 		return fmt.Sprintf("%s", "Please enter the end dateTime of your task  ex: '1479261035690'"), nil
 	case 4:
 		session["endDateTime"] = message
+		layout := "2006-01-02T15:04:05.000Z"
+		_, err := time.Parse(layout, session["startDateTime"])
+
+		if err != nil {
+			return fmt.Sprintf("%s", "Invalid date format  ex: '2016-12-02T07:37:00.933Z'"), nil
+		}
 		x = 5
 		return fmt.Sprintf("%s", "Please enter the location of the event ex:(Longitude,Latitude)"), nil
 	case 5:
