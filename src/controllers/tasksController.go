@@ -29,6 +29,7 @@ func NewTaskController(s *mgo.Session) *TaskController {
 func (taskController TaskController) InsertTask(newTask models.Task) (bson.ObjectId, error) {
 	// add an ID
 	newTask.ID = bson.NewObjectId()
+	fmt.Println(newTask)
 	// Write the task to mongo
 	err := taskController.Session.DB("advanced_computer_lab").C("tasks").Insert(newTask)
 	if err != nil {
@@ -149,7 +150,7 @@ func (taskController TaskController) ListTasks(id string) ([]models.Task, error)
 	now := time.Now().UTC()
 
 	tasks := []models.Task{}
-	err := taskController.Session.DB("advanced_computer_lab").C("tasks").Find(bson.M{"_id": objectID, "endDateTime": bson.M{"$gte": now}}).All(&tasks)
+	err := taskController.Session.DB("advanced_computer_lab").C("tasks").Find(bson.M{"userID": objectID, "endDateTime": bson.M{"$gte": now}}).All(&tasks)
 
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get task with id: %s . %v", id, err)
