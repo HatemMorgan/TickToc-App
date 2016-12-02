@@ -18,7 +18,7 @@ import (
 var (
 
 	// WelcomeMessage A constant to hold the welcome message
-	WelcomeMessage = "Tick-tock, Whenever you want to add an event, just type 'add'!"
+	WelcomeMessage = "Tick-tock, Whenever you want to add an event or task, just type 'add'!"
 
 	// sessions = {
 	//   "uuid1" = Session{
@@ -69,18 +69,25 @@ func Welcome(userID string) map[string]string {
 	defer sessionModel.DBSession.Close()
 
 	// check if the user has an already opened session
-	session, err := sessionModel.GetSession(userID)
+	session, err1 := sessionModel.GetSession(userID)
 	// if there is an error this means that this user has no sessions opened
-	if err != nil {
-		fmt.Println(err)
+	if err1 != nil {
+		fmt.Println(err1)
 		// Create a session for this UUID and added it to the database
-		_, err := sessionModel.InsertNewSession(uuid, userID)
+		NewSession, err := sessionModel.InsertNewSession(uuid, userID)
 
 		if err != nil {
 			return map[string]string{
 				"error":   "Could not create a session key " + err.Error(),
 				"message": "",
 			}
+		}
+
+		sessions[NewSession.UUID] = Session{}
+		// Write a JSON containg the welcome message and the generated UUID
+		return map[string]string{
+			"uuid":    NewSession.UUID,
+			"message": WelcomeMessage,
 		}
 
 		sessions[session.UUID] = Session{}
@@ -192,8 +199,9 @@ func taskchatbotProcess(session Session, message string) (string, error) {
 
 	if strings.EqualFold(message, "done") && x == 6 {
 		x = -1
-		startDateTime, _ := strconv.ParseInt(session["startDateTime"], 10, 64)
-		endDateTime, _ := strconv.ParseInt(session["endDateTime"], 10, 64)
+		layout := "2006-01-02T15:04:05.000Z"
+		startDateTime, _ := time.Parse(layout, session["startDateTime"])
+		endDateTime, _ := time.Parse(layout, session["endDateTime"])
 
 		userID := bson.ObjectIdHex(session["userID"])
 
@@ -227,13 +235,26 @@ func taskchatbotProcess(session Session, message string) (string, error) {
 	case 2:
 		session["description"] = message
 		x = 3
-		return fmt.Sprintf("%s", "Please enter the start dateTime of your task"), nil
+		return fmt.Sprintf("%s", "Please enter the start dateTime of your task . ex: '2016-12-02T07:37:00.933Z'"), nil
 	case 3:
 		session["startDateTime"] = message
+
+		layout := "2006-01-02T15:04:05.000Z"
+		_, err := time.Parse(layout, session["startDateTime"])
+
+		if err != nil {
+			return fmt.Sprintf("%s", "Invalid date format  ex: '2016-12-02T07:37:00.933Z'"), nil
+		}
 		x = 4
-		return fmt.Sprintf("%s", "Please enter the end dateTime of your task"), nil
+		return fmt.Sprintf("%s", "Please enter the end dateTime of your task  ex: '2016-12-02T07:37:00.933Z'"), nil
 	case 4:
 		session["endDateTime"] = message
+		layout := "2006-01-02T15:04:05.000Z"
+		_, err := time.Parse(layout, session["startDateTime"])
+
+		if err != nil {
+			return fmt.Sprintf("%s", "Invalid date format  ex: '2016-12-02T07:37:00.933Z'"), nil
+		}
 		x = 5
 		return fmt.Sprintf("%s", "Please enter the location of the event ex:(Longitude,Latitude)"), nil
 	case 5:
@@ -292,11 +313,11 @@ func eventChatProcessor(session Session, message string) (string, error) {
 	case 2:
 		session["description"] = message
 		x = 3
-		return fmt.Sprintf("%s", "Please enter the start dateTime of the event"), nil
+		return fmt.Sprintf("%s", "Please enter the start dateTime of the event  ex: '2016-11-13T22:00:00-07:00'"), nil
 	case 3:
 		session["startDateTime"] = message
 		x = 4
-		return fmt.Sprintf("%s", "Please enter the end dateTime of the event"), nil
+		return fmt.Sprintf("%s", "Please enter the end dateTime of the event  ex: '2016-11-13T22:00:00-07:00'"), nil
 	case 4:
 		session["endDateTime"] = message
 		x = 5

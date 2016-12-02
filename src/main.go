@@ -19,7 +19,7 @@ func main() {
 	port := os.Getenv("PORT")
 	// Default to 3000 if no PORT environment variable was defined
 	if port == "" {
-		port = "4000"
+		port = "3000"
 	}
 	// Start the server
 	fmt.Printf("Listening on port %s...\n", port)
@@ -86,19 +86,27 @@ func main() {
 
 	// GoogleCalendarcontroller.DeleteEvent("k352nehms8mbf0hbe69jat2qig@group.calendar.google.com", "j518p4bcagq8kt1717vvmb8bf0")
 
-	// manual testing for tasks
+	// manual testing for taskss
 
-	// taskController := controllers.NewTaskController(getSession())
+	// taskController := controllers.NewTaskController(db.GetSession())
+	// tasks, err := taskController.ListTasks("582bc3458a4e9e29e1a54439")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println(tasks)
 
+	// now := time.Now()
 	// newTask := models.Task{
-	// 	Title:         "Project Advanced Computer Lab",
-	// 	Description:   "Full Backend server using go language",
-	// 	StartDateTime: time.Now().UnixNano() / int64(time.Millisecond),
-	// 	EndDateTime:   time.Now().UnixNano() / int64(time.Millisecond),
+	// 	Title:         "Project Advanced Computer Lab Milstone 2",
+	// 	Description:   "Android Application",
+	// 	StartDateTime: now.UTC(),
+	// 	EndDateTime:   now.Add(120 * time.Hour).UTC(),
 	// 	Location: models.Location{
 	// 		Latitude:  "0.002",
 	// 		Longitude: "-0.23324",
 	// 	},
+	// 	UserID: bson.ObjectIdHex("582bc3458a4e9e29e1a54439"),
 	// }
 	// id, err := taskController.InsertTask(newTask)
 	// if err != nil {
@@ -114,7 +122,7 @@ func main() {
 	// 	fmt.Println(err)
 	// 	return
 	// }
-	// task, err := taskController.GetTask("582bbb6b8a4e9e46c7df713e")
+	// task, err := taskController.GetTask("58412cb78a4e9e1115464f2a")
 	// if err != nil {
 	// 	fmt.Println(err)
 	// 	return

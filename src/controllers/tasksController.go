@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"models"
+	"time"
 
 	"fmt"
 
@@ -28,6 +29,7 @@ func NewTaskController(s *mgo.Session) *TaskController {
 func (taskController TaskController) InsertTask(newTask models.Task) (bson.ObjectId, error) {
 	// add an ID
 	newTask.ID = bson.NewObjectId()
+	fmt.Println(newTask)
 	// Write the task to mongo
 	err := taskController.Session.DB("advanced_computer_lab").C("tasks").Insert(newTask)
 	if err != nil {
@@ -134,7 +136,25 @@ func (taskController TaskController) UpdateTask(updatedMap map[string]string, id
 	return nil
 }
 
-// //ListTasks lists all tasks
-// func ListTasks() ([]models.Task, error) {
+//ListTasks lists all tasks
+func (taskController TaskController) ListTasks(id string) ([]models.TaskList, error) {
+	// Verify id is ObjectId, otherwise return error
+	if !bson.IsObjectIdHex(id) {
+		return nil, fmt.Errorf("Invalid ID")
+	}
+	// Grab id
+	objectID := bson.ObjectIdHex(id)
 
-// }
+	// get tasks from mongo
+
+	now := time.Now().UTC()
+
+	tasks := []models.TaskList{}
+	err := taskController.Session.DB("advanced_computer_lab").C("tasks").Find(bson.M{"userID": objectID, "endDateTime": bson.M{"$gte": now}}).Select(bson.M{"_id": 1, "title": 1}).All(&tasks)
+
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get task with id: %s . %v", id, err)
+	}
+
+	return tasks, nil
+}

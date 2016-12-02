@@ -222,3 +222,37 @@ func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, json)
 
 }
+
+//TaskListHandler list all the tasks for a specific user
+func TaskListHandler(w http.ResponseWriter, r *http.Request) {
+	// getting taskID from url passed parameters
+	userID := r.URL.Query().Get("userID")
+	// creating error json object to be passed with the response if the taskID is not provided
+	if userID == "" {
+		newError := errorObj{Message: "ID of User must be provided as a query parameter with key = id ex:(?userID=userID)", Resource: "Task"}
+		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Bad Request", Status: http.StatusBadRequest}
+		writeJSON(w, json)
+		fmt.Println("ID of User must be provided as a query parameter with key = id ex:(?userID=userID)", http.StatusBadRequest)
+		return
+	}
+
+	// creating a taskcontroller and path to it a new db session
+	taskController := controllers.NewTaskController(db.GetSession())
+	// close db session after finishing working
+	defer taskController.Session.Close()
+
+	// calling taskController getTask and pass to the taksID
+	tasks, err := taskController.ListTasks(userID)
+
+	if err != nil {
+		newError := errorObj{Message: err.Error(), Resource: "Tasks"}
+		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal server error", Status: http.StatusInternalServerError}
+		writeJSON(w, json)
+		fmt.Println(err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json := successTasksListJSONObj{Status: http.StatusOK, Message: "OK", Results: tasks}
+	writeJSON(w, json)
+
+}

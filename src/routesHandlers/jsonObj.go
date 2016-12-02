@@ -56,6 +56,12 @@ type successUserJSONObj struct {
 	Results models.User `json:"results"`
 }
 
+type successTasksListJSONObj struct {
+	Status  int64             `json:"Status"`
+	Message string            `json:"message"`
+	Results []models.TaskList `json:"results"`
+}
+
 //WriteJSON Writes the JSON equivilant for data into ResponseWriter w
 func writeJSON(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")

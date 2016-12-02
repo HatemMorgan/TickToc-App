@@ -21,6 +21,7 @@ func Routing(addr string) error {
 	mux.HandleFunc("/events/list", withLog(routesHandlers.EventListHandler))
 	mux.HandleFunc("/events", withLog(routesHandlers.EventHandler))
 	mux.HandleFunc("/tasks", withLog(routesHandlers.TaskHandler))
+	mux.HandleFunc("/tasks/list", withLog(routesHandlers.TaskListHandler))
 	mux.HandleFunc("/users", withLog(routesHandlers.UsersHandler))
 	mux.HandleFunc("/", withLog(routesHandlers.Handle))
 	// Start the server
