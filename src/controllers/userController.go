@@ -39,7 +39,7 @@ func (userController UserController) InsertUser(newUser models.User, tokenCode s
 		return "", fmt.Errorf("Unable to add new Task . %v ", err)
 	}
 
-	return newUser.ID.String(), nil
+	return newUser.ID.Hex(), nil
 }
 
 //GetUser retrieves an individual user resource
@@ -95,7 +95,7 @@ func (userController UserController) UpdateUser(updatedMap map[string]string, id
 
 	for key, value := range updatedMap {
 		// make sure that the field is a valid field for user resource
-		fieldsMap := map[string]string{"FirstName": "firstName", "LastName": "lastName", "Email": "email", "CalenarID": "calenarID"}
+		fieldsMap := map[string]string{"FirstName": "firstName", "LastName": "lastName", "Email": "email", "CalenarID": "calendarID"}
 		_, ok := fieldsMap[key]
 		if !ok {
 			return fmt.Errorf("Invalid Field with this name: %s", key)

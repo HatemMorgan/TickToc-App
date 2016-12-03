@@ -55,7 +55,7 @@ func insertUserHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		json := authURLJSONObj{Message: "OK", Status: http.StatusOK, Results: map[string]string{authURL: authURL}}
+		json := authURLJSONObj{Message: "OK", Status: http.StatusOK, Results: map[string]string{"authURL": authURL}}
 		writeJSON(w, json)
 		return
 	}
@@ -83,6 +83,7 @@ func insertUserHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	user, err := userController.GetUser(userID)
 	if err != nil {
 		newError := errorObj{Message: err.Error(), Resource: "Users"}
