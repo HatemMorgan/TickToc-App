@@ -43,7 +43,7 @@ func insertUserHandler(w http.ResponseWriter, r *http.Request) {
 	// pass the memory address of the body object
 	// this will populate the struct with the values from the request body
 	// any field that is not in the request body will have its default value ex: for string it will be "" for arrays it will be []
-
+	//
 	tokenCode := r.Header.Get("tokenCode")
 	if tokenCode == "" {
 		authURL, err := calendarAuth.GetAuthURLFromWeb()
