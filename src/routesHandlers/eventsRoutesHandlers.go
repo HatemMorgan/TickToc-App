@@ -68,7 +68,8 @@ func deleteEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	eventController := controllers.NewEventController()
-	err = eventController.DeleteEvent(calendarID, eventID)
+	err = eventController.DeleteEvent(calendarID, eventID, user.Token)
+
 	if err != nil {
 		newError := errorObj{Message: "Unable to delete event. " + err.Error(), Resource: "Google calendar Event"}
 		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal Server Error", Status: http.StatusInternalServerError}
@@ -184,7 +185,7 @@ func updateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(len(newAttendees), " ", len(deletedAttendees))
 	eventController := controllers.NewEventController()
-	updatedEvent, err := eventController.UpdateEvent(calendarID, eventID, newAttendees, deletedAttendees, eventMap)
+	updatedEvent, err := eventController.UpdateEvent(calendarID, eventID, newAttendees, deletedAttendees, eventMap, user.Token)
 	if err != nil {
 		newError := errorObj{Message: err.Error(), Resource: "Google calendar Event"}
 		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal Server Error", Status: http.StatusInternalServerError}
@@ -235,7 +236,7 @@ func getEvent(w http.ResponseWriter, r *http.Request) {
 	}
 	// calling controller's get event function the return the event from google calendar api
 	eventController := controllers.NewEventController()
-	event, err := eventController.GetEvent(calendarID, eventID)
+	event, err := eventController.GetEvent(calendarID, eventID, user.Token)
 	if err != nil {
 		newError := errorObj{Message: err.Error(), Resource: "Google calendar Event"}
 		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal Server Error", Status: http.StatusInternalServerError}
@@ -283,7 +284,7 @@ func EventListHandler(w http.ResponseWriter, r *http.Request) {
 	calendarID := user.CalendarID
 
 	eventController := controllers.NewEventController()
-	calendarTitle, events, err := eventController.ListEvents(calendarID)
+	calendarTitle, events, err := eventController.ListEvents(calendarID, user.Token)
 
 	if err != nil {
 		// creating error json object to be send with the response

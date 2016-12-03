@@ -69,24 +69,12 @@ func insertUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	eventController := controllers.NewEventController()
-	calendarID, err := eventController.CreateAdvancedLabCalendar()
-	if err != nil {
-		newError := errorObj{Message: err.Error(), Resource: "Google Calendar"}
-		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal Server Error", Status: http.StatusInternalServerError}
-		writeJSON(w, json)
-		fmt.Println(err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	newUserData.CalendarID = calendarID
-
 	// creating a userController and path to it a new db session
 	userController := controllers.NewUserController(db.GetSession())
 	// close db session after finishing working
 	defer userController.Session.Close()
 
-	id, err := userController.InsertUser(newUserData, tokencode)
+	userID, err := userController.InsertUser(newUserData, tokenCode)
 
 	if err != nil {
 		newError := errorObj{Message: err.Error(), Resource: "Users"}
@@ -95,7 +83,28 @@ func insertUserHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json := successJSONObj{Status: http.StatusCreated, Message: "user added successfully", Results: map[string]string{"id": id}}
+	user, err := userController.GetUser(userID)
+	if err != nil {
+		newError := errorObj{Message: err.Error(), Resource: "Users"}
+		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal server error", Status: http.StatusInternalServerError}
+		writeJSON(w, json)
+		fmt.Println(err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	eventController := controllers.NewEventController()
+	calendarID, err := eventController.CreateAdvancedLabCalendar(user.Token)
+	if err != nil {
+		newError := errorObj{Message: err.Error(), Resource: "Google Calendar"}
+		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal Server Error", Status: http.StatusInternalServerError}
+		writeJSON(w, json)
+		fmt.Println(err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	userController.UpdateUser(map[string]string{"CalenarID": calendarID}, userID)
+
+	json := successJSONObj{Status: http.StatusCreated, Message: "user added successfully", Results: map[string]string{"userID": userID}}
 	writeJSON(w, json)
 }
 
