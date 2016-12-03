@@ -44,10 +44,10 @@ type (
 	// JSON map[string]interface{}
 
 	// Processor Alias for Process func
-	Processor func(session Session, message string) (string, error)
+	Processor func(session Session, message string, userID string) (string, error)
 )
 
-func defaultProcessor(session Session, message string) (string, error) {
+func defaultProcessor(session Session, message string, userID string) (string, error) {
 	return "", fmt.Errorf("You must use either the task or event chats")
 }
 
@@ -126,7 +126,7 @@ func EventChat(uuid, userID string, data map[string]string) (map[string]string, 
 	ProcessFunc(eventChatProcessor)
 
 	// Process the received message
-	message, err := processor(session, data["message"])
+	message, err := processor(session, data["message"], userID)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +159,7 @@ func TaskChat(uuid, userID string, data map[string]string) (map[string]string, e
 	ProcessFunc(taskchatbotProcess)
 
 	// Process the received message
-	message, err := processor(session, data["message"])
+	message, err := processor(session, data["message"], userID)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +184,7 @@ var x = -1
 var attendeesEmails []string
 
 //TaskchatbotProcess is used for handling chat of tasks questions and answers
-func taskchatbotProcess(session Session, message string) (string, error) {
+func taskchatbotProcess(session Session, message string, userID string) (string, error) {
 	taskController := controllers.NewTaskController(db.GetSession())
 	if strings.EqualFold(message, "add") {
 		// session = make(map[string]string)
@@ -278,7 +278,7 @@ func taskchatbotProcess(session Session, message string) (string, error) {
 }
 
 //EventChatProcessor is used for handling chat of events questions and answers
-func eventChatProcessor(session Session, message string) (string, error) {
+func eventChatProcessor(session Session, message string, userID string) (string, error) {
 	eventController := controllers.NewEventController()
 	if strings.EqualFold(message, "add") {
 		// session = make(map[string]string)
@@ -293,7 +293,13 @@ func eventChatProcessor(session Session, message string) (string, error) {
 	if strings.EqualFold(message, "done") && x == 8 {
 		x = -1
 		fmt.Println(session)
-		event, err := eventController.InsertEvent(session, attendeesEmails)
+		userController := controllers.NewUserController(db.GetSession())
+		// get user to get token of the this user to pass it to insert event function
+		user, err := userController.GetUser(userID)
+		if err != nil {
+			return "", err
+		}
+		event, err := eventController.InsertEvent(session, attendeesEmails, user.Token)
 		if err != nil {
 			return "", fmt.Errorf(err.Error())
 		}

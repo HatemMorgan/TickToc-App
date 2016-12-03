@@ -9,6 +9,7 @@ import (
 
 	"db"
 
+	"golang.org/x/oauth2"
 	calendar "google.golang.org/api/calendar/v3"
 )
 
@@ -23,8 +24,8 @@ func NewEventController() *EventController {
 }
 
 //GetCallenderList returns a list of all Calendars
-func (ec EventController) GetCallenderList() {
-	srv, err := calendarAuth.GetCalendarService()
+func (ec EventController) GetCallenderList(token *oauth2.Token) {
+	srv, err := calendarAuth.GetCalendarService(token)
 	listRes, err := srv.CalendarList.List().Fields("items/id").Do()
 	if err != nil {
 		log.Fatalf("Unable to retrieve list of calendars: %v", err)
@@ -50,9 +51,9 @@ func (ec EventController) GetCallenderList() {
 }
 
 // InsertEvent takes the new event entry from user and create a new event then insert it using google calendar api
-func (ec EventController) InsertEvent(newEventMap map[string]string, attendeesEmails []string) (calendar.Event, error) {
+func (ec EventController) InsertEvent(newEventMap map[string]string, attendeesEmails []string, token *oauth2.Token) (calendar.Event, error) {
 	// Getting the authenticated calendar service
-	srv, err := calendarAuth.GetCalendarService()
+	srv, err := calendarAuth.GetCalendarService(token)
 
 	if err != nil {
 		log.Fatalf("Error: %v", err)
@@ -107,9 +108,9 @@ func (ec EventController) InsertEvent(newEventMap map[string]string, attendeesEm
 }
 
 //CreateAdvancedLabCalendar creates a new calendar for Advanced computer lab course
-func (ec EventController) CreateAdvancedLabCalendar() (string, error) {
+func (ec EventController) CreateAdvancedLabCalendar(token *oauth2.Token) (string, error) {
 	// Getting the authenticated calendar service
-	srv, err := calendarAuth.GetCalendarService()
+	srv, err := calendarAuth.GetCalendarService(token)
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 		panic(err)
@@ -131,9 +132,9 @@ func (ec EventController) CreateAdvancedLabCalendar() (string, error) {
 }
 
 //DeleteCalendar deletes a calendar with a specific ID
-func (ec EventController) DeleteCalendar(calendarID string) error {
+func (ec EventController) DeleteCalendar(calendarID string, token *oauth2.Token) error {
 	// Getting the authenticated calendar service
-	srv, err := calendarAuth.GetCalendarService()
+	srv, err := calendarAuth.GetCalendarService(token)
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 		panic(err)
@@ -150,9 +151,9 @@ func (ec EventController) DeleteCalendar(calendarID string) error {
 }
 
 //UpdateEvent it updates a specific event
-func (ec EventController) UpdateEvent(calendarID, eventID string, newAttendees []string, deletedAttendees map[string]string, updatedEventMap map[string]string) (calendar.Event, error) {
+func (ec EventController) UpdateEvent(calendarID, eventID string, newAttendees []string, deletedAttendees map[string]string, updatedEventMap map[string]string, token *oauth2.Token) (calendar.Event, error) {
 	// Getting the authenticated calendar service
-	srv, err := calendarAuth.GetCalendarService()
+	srv, err := calendarAuth.GetCalendarService(token)
 	if err != nil {
 		fmt.Println("Error: ", err)
 		panic(err)
@@ -228,9 +229,9 @@ func (ec EventController) UpdateEvent(calendarID, eventID string, newAttendees [
 }
 
 //ListEvents list all events in a specific calendar
-func (ec EventController) ListEvents(calendarID string) (string, []*calendar.Event, error) {
+func (ec EventController) ListEvents(calendarID string, token *oauth2.Token) (string, []*calendar.Event, error) {
 	// Getting the authenticated calendar service
-	srv, err := calendarAuth.GetCalendarService()
+	srv, err := calendarAuth.GetCalendarService(token)
 	if err != nil {
 		fmt.Println("Error: ", err)
 		panic(err)
@@ -259,9 +260,9 @@ func (ec EventController) ListEvents(calendarID string) (string, []*calendar.Eve
 }
 
 //GetEvent gets an event
-func (ec EventController) GetEvent(calendarID, eventID string) (calendar.Event, error) {
+func (ec EventController) GetEvent(calendarID, eventID string, token *oauth2.Token) (calendar.Event, error) {
 	// Getting the authenticated calendar service
-	srv, err := calendarAuth.GetCalendarService()
+	srv, err := calendarAuth.GetCalendarService(token)
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 		panic(err)
@@ -282,9 +283,9 @@ func (ec EventController) GetEvent(calendarID, eventID string) (calendar.Event, 
 }
 
 //DeleteEvent deletes an event
-func (ec EventController) DeleteEvent(calendarID, eventID string) error {
+func (ec EventController) DeleteEvent(calendarID, eventID string, token *oauth2.Token) error {
 	// Getting the authenticated calendar service
-	srv, err := calendarAuth.GetCalendarService()
+	srv, err := calendarAuth.GetCalendarService(token)
 	if err != nil {
 		fmt.Println("Error: ", err)
 		panic(err)
