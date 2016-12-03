@@ -1,6 +1,7 @@
 package models
 
 import "gopkg.in/mgo.v2/bson"
+import "golang.org/x/oauth2"
 
 type (
 	// User represents the structure of our resource
@@ -10,6 +11,7 @@ type (
 		LastName   string        `json:"lastName" bson:"lastName"`
 		Email      string        `json:"email" bson:"email"`
 		CalendarID string        `json:"calendarID" bson:"calendarID"`
+		Token      *oauth2.Token `json:"token" bson:"token"`
 	}
 )
 

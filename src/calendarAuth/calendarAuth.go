@@ -1,15 +1,9 @@
 package calendarAuth
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
-	"net/url"
-	"os"
-	"os/user"
-	"path/filepath"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -19,78 +13,102 @@ import (
 
 // getClient uses a Context and Config to retrieve a Token
 // then generate a Client. It returns the generated Client.
-func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
-	cacheFile, err := tokenCacheFile()
-	if err != nil {
-		log.Fatalf("Unable to get path to cached credential file. %v", err)
-	}
-	tok, err := tokenFromFile(cacheFile)
-	if err != nil {
-		tok = getTokenFromWeb(config)
-		saveToken(cacheFile, tok)
-	}
-	return config.Client(ctx, tok)
-}
+// func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
+// 	cacheFile, err := tokenCacheFile()
+// 	if err != nil {
+// 		log.Fatalf("Unable to get path to cached credential file. %v", err)
+// 	}
+// 	tok, err := tokenFromFile(cacheFile)
+// 	if err != nil {
+// 		tok = getTokenFromWeb(config)
+// 		// saveToken(cacheFile, tok)
+// 	}
+// 	return config.Client(ctx, tok)
+// }
 
-// getTokenFromWeb uses Config to request a Token.
-// It returns the retrieved Token.
-func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
+//GetAuthURLFromWeb return authentication url
+func GetAuthURLFromWeb() (string, error) {
+	config, err := getConfig()
+	if err != nil {
+		return "", err
+	}
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 	fmt.Printf("Go to the following link in your browser then type the "+
 		"authorization code: \n%v\n", authURL)
 
-	var code string
-	if _, err := fmt.Scan(&code); err != nil {
-		log.Fatalf("Unable to read authorization code %v", err)
-	}
-
-	tok, err := config.Exchange(oauth2.NoContext, code)
-	if err != nil {
-		log.Fatalf("Unable to retrieve token from web %v", err)
-	}
-	return tok
+	return authURL, nil
 }
 
 // tokenCacheFile generates credential file path/filename.
 // It returns the generated credential path/filename.
-func tokenCacheFile() (string, error) {
-	usr, err := user.Current()
+// func tokenCacheFile() (string, error) {
+// 	usr, err := user.Current()
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	tokenCacheDir := filepath.Join(usr.HomeDir, ".credentials")
+// 	os.MkdirAll(tokenCacheDir, 0700)
+// 	return filepath.Join(tokenCacheDir,
+// 		url.QueryEscape("calendar-go-quickstart.json")), err
+// }
+
+// // tokenFromFile retrieves a Token from a given file path.
+// // It returns the retrieved Token and any read error encountered.
+// func tokenFromFile(file string) (*oauth2.Token, error) {
+// 	f, err := os.Open(file)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	t := &oauth2.Token{}
+// 	err = json.NewDecoder(f).Decode(t)
+// 	defer f.Close()
+// 	return t, err
+// }
+
+//GetTokenToBeSaved used to get token for authentication of user pass it insertUser to insert user
+func GetTokenToBeSaved(tokenCode string) (*oauth2.Token, error) {
+	// fmt.Printf("Saving credential file to: %s\n", file)
+	// f, err := os.Create(file)
+	// if err != nil {
+	// 	log.Fatalf("Unable to cache oauth token: %v", err)
+	// }
+	// defer f.Close()
+	// json.NewEncoder(f).Encode(token)
+	config, err := getConfig()
+
 	if err != nil {
-		return "", err
+		return &oauth2.Token{}, err
 	}
-	tokenCacheDir := filepath.Join(usr.HomeDir, ".credentials")
-	os.MkdirAll(tokenCacheDir, 0700)
-	return filepath.Join(tokenCacheDir,
-		url.QueryEscape("calendar-go-quickstart.json")), err
+
+	tok, err := config.Exchange(oauth2.NoContext, tokenCode)
+
+	if err != nil {
+		return &oauth2.Token{}, fmt.Errorf("Unable to retrieve token from web %v", err)
+	}
+
+	return tok, nil
+
 }
 
-// tokenFromFile retrieves a Token from a given file path.
-// It returns the retrieved Token and any read error encountered.
-func tokenFromFile(file string) (*oauth2.Token, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return nil, err
-	}
-	t := &oauth2.Token{}
-	err = json.NewDecoder(f).Decode(t)
-	defer f.Close()
-	return t, err
-}
+func getConfig() (*oauth2.Config, error) {
 
-// saveToken uses a file path to create a file and store the
-// token in it.
-func saveToken(file string, token *oauth2.Token) {
-	fmt.Printf("Saving credential file to: %s\n", file)
-	f, err := os.Create(file)
+	b, err := ioutil.ReadFile("./calendarAuth/client_secret.json")
 	if err != nil {
-		log.Fatalf("Unable to cache oauth token: %v", err)
+		fmt.Println("Unable to read client secret file: ", err)
+		return &oauth2.Config{}, fmt.Errorf("Unable to read client secret file: %v", err)
 	}
-	defer f.Close()
-	json.NewEncoder(f).Encode(token)
+
+	config, err := google.ConfigFromJSON(b, calendar.CalendarScope)
+	// config, err := google.ConfigFromJSON(b)
+	if err != nil {
+		fmt.Println("Unable to parse client secret file to config: ", err)
+		return &oauth2.Config{}, fmt.Errorf("Unable to parse client secret file to config: %v", err)
+	}
+	return config, nil
 }
 
 // GetCalendarService gives service in order to call calendar apis
-func GetCalendarService() (calendar.Service, error) {
+func GetCalendarService(token *oauth2.Token) (calendar.Service, error) {
 	ctx := context.Background()
 	// this should be changed to get path dynamically
 	//	b, err := ioutil.ReadFile("/home/hatem/workspaceGO/src/calendarAuth/client_secret.json")
@@ -106,7 +124,7 @@ func GetCalendarService() (calendar.Service, error) {
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
-	client := getClient(ctx, config)
+	client := config.Client(ctx, token)
 
 	srv, err := calendar.New(client)
 

@@ -1,6 +1,7 @@
 package routesHandlers
 
 import (
+	"calendarAuth"
 	"controllers"
 	"db"
 	"encoding/json"
@@ -42,6 +43,23 @@ func insertUserHandler(w http.ResponseWriter, r *http.Request) {
 	// pass the memory address of the body object
 	// this will populate the struct with the values from the request body
 	// any field that is not in the request body will have its default value ex: for string it will be "" for arrays it will be []
+
+	tokenCode := r.Header.Get("tokenCode")
+	if tokenCode == "" {
+		authURL, err := calendarAuth.GetAuthURLFromWeb()
+		if err != nil {
+			newError := errorObj{Message: err.Error(), Resource: "Users"}
+			json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal Server Error", Status: http.StatusInternalServerError}
+			fmt.Println(err.Error(), http.StatusInternalServerError)
+			writeJSON(w, json)
+			return
+		}
+
+		json := authURLJSONObj{Message: "OK", Status: http.StatusOK, Results: map[string]string{authURL: authURL}}
+		writeJSON(w, json)
+		return
+	}
+
 	err := json.NewDecoder(r.Body).Decode(&newUserData)
 	if err != nil {
 		newError := errorObj{Message: "Unable to parse request body . " + err.Error(), Resource: "Users"}
@@ -68,7 +86,7 @@ func insertUserHandler(w http.ResponseWriter, r *http.Request) {
 	// close db session after finishing working
 	defer userController.Session.Close()
 
-	id, err := userController.InsertUser(newUserData)
+	id, err := userController.InsertUser(newUserData, tokencode)
 
 	if err != nil {
 		newError := errorObj{Message: err.Error(), Resource: "Users"}

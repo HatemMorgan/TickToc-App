@@ -5,6 +5,8 @@ import (
 
 	"fmt"
 
+	"calendarAuth"
+
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -23,10 +25,14 @@ func NewUserController(s *mgo.Session) *UserController {
 }
 
 //InsertUser is responsible to add new user to database
-func (userController UserController) InsertUser(newUser models.User) (string, error) {
+func (userController UserController) InsertUser(newUser models.User, tokenCode string) (string, error) {
 	// add an ID
 	newUser.ID = bson.NewObjectId()
-
+	token, err1 := calendarAuth.GetTokenToBeSaved(tokenCode)
+	if err1 != nil {
+		return "", err1
+	}
+	newUser.Token = token
 	// Write the user to mongo
 	err := userController.Session.DB("advanced_computer_lab").C("users").Insert(newUser)
 	if err != nil {
