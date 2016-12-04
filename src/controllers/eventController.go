@@ -4,6 +4,7 @@ import (
 	"calendarAuth"
 	"fmt"
 	"log"
+	"time"
 
 	"strings"
 
@@ -74,11 +75,11 @@ func (ec EventController) InsertEvent(newEventMap map[string]string, attendeesEm
 		Description: newEventMap["description"],
 		Start: &calendar.EventDateTime{
 			DateTime: newEventMap["startDateTime"],
-			TimeZone: "Egypt",
+			TimeZone: "Africa/Egypt",
 		},
 		End: &calendar.EventDateTime{
 			DateTime: newEventMap["endDateTime"],
-			TimeZone: "Egypt",
+			TimeZone: "Africa/Egypt",
 		},
 		Attendees: attendees,
 		Organizer: &calendar.EventOrganizer{Email: newEventMap["organizerEmail"]},
@@ -229,15 +230,26 @@ func (ec EventController) UpdateEvent(calendarID, eventID string, newAttendees [
 }
 
 //ListEvents list all events in a specific calendar
-func (ec EventController) ListEvents(calendarID string, token *oauth2.Token) (string, []*calendar.Event, error) {
+func (ec EventController) ListEvents(calendarID string, token *oauth2.Token, sortCriteria string) (string, []*calendar.Event, error) {
 	// Getting the authenticated calendar service
 	srv, err := calendarAuth.GetCalendarService(token)
 	if err != nil {
 		fmt.Println("Error: ", err)
 		panic(err)
 	}
+	t := time.Now().Format(time.RFC3339)
 
-	result, err := srv.Events.List(calendarID).Fields("items(description,id,summary)", "summary", "nextPageToken").Do()
+	// 	events, err := srv.Events.List("primary").ShowDeleted(false).
+	// 		SingleEvents(true).TimeMin(t).MaxResults(10).OrderBy("startTime").Do()
+	result := &calendar.Events{}
+	if sortCriteria == "" {
+		result, err = srv.Events.List(calendarID).Fields("items(created,id,summary)", "summary", "nextPageToken").TimeMin(t).
+			ShowDeleted(false).OrderBy("startTime").Do()
+
+	} else {
+		result, err = srv.Events.List(calendarID).Fields("items(created,id,summary)", "summary", "nextPageToken").TimeMin(t).
+			ShowDeleted(false).OrderBy(sortCriteria).Do()
+	}
 
 	if err != nil {
 		fmt.Println("Unable to retrieve calendar events list ", err)
@@ -245,17 +257,7 @@ func (ec EventController) ListEvents(calendarID string, token *oauth2.Token) (st
 	}
 
 	events := result.Items
-	// fmt.Println(result.Summary)
 
-	// ***pagination
-	// for result.NextPageToken != "" {
-	// 	result, err := srv.Events.List(calendarID).Fields("items(description,id,summary)", "summary", "nextPageToken").Do()
-	// 	events = append(events[:], result.Items[:])
-	// }
-
-	// for _, event := range events {
-	// 	fmt.Println("event id: " + event.Id + " and event summary: " + event.Summary)
-	// }
 	return result.Summary, events, nil
 }
 

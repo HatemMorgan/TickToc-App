@@ -271,6 +271,7 @@ func EventListHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	userID := r.URL.Query().Get("userID")
+	sortCriteria := r.URL.Query().Get("sort")
 	user, err := getUser(userID)
 
 	if err != nil {
@@ -284,7 +285,8 @@ func EventListHandler(w http.ResponseWriter, r *http.Request) {
 	calendarID := user.CalendarID
 
 	eventController := controllers.NewEventController()
-	calendarTitle, events, err := eventController.ListEvents(calendarID, user.Token)
+
+	calendarTitle, events, err := eventController.ListEvents(calendarID, user.Token, sortCriteria)
 
 	if err != nil {
 		// creating error json object to be send with the response
