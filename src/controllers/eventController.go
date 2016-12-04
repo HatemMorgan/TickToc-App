@@ -75,11 +75,11 @@ func (ec EventController) InsertEvent(newEventMap map[string]string, attendeesEm
 		Description: newEventMap["description"],
 		Start: &calendar.EventDateTime{
 			DateTime: newEventMap["startDateTime"],
-			TimeZone: "Africa/Egypt",
+			TimeZone: "Egypt",
 		},
 		End: &calendar.EventDateTime{
 			DateTime: newEventMap["endDateTime"],
-			TimeZone: "Africa/Egypt",
+			TimeZone: "Egypt",
 		},
 		Attendees: attendees,
 		Organizer: &calendar.EventOrganizer{Email: newEventMap["organizerEmail"]},
@@ -173,12 +173,12 @@ func (ec EventController) UpdateEvent(calendarID, eventID string, newAttendees [
 		case "startDateTime":
 			event.Start = &calendar.EventDateTime{
 				DateTime: value,
-				TimeZone: "Africa/Egypt",
+				TimeZone: "Egypt",
 			}
 		case "endDateTime":
 			event.End = &calendar.EventDateTime{
 				DateTime: value,
-				TimeZone: "Africa/Egypt",
+				TimeZone: "Egypt",
 			}
 		case "location":
 			event.Location = value

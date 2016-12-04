@@ -2,6 +2,8 @@ package routesHandlers
 
 import (
 	"chatbot"
+	"controllers"
+	"db"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -36,6 +38,19 @@ func HandleWelcome(w http.ResponseWriter, r *http.Request) {
 		})
 		fmt.Println("ID of User must be provided as a query parameter with key = id ex:(?id=userID)", http.StatusBadRequest)
 		return
+	}
+
+	userController := controllers.NewUserController(db.GetSession())
+	_, err := userController.GetUser(userID)
+
+	if err != nil {
+		if err != nil {
+			newError := errorObj{Message: err.Error(), Resource: "Welcome chat"}
+			json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Bad Request", Status: http.StatusBadRequest}
+			writeJSON(w, json)
+			fmt.Println(err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 
 	res := chatbot.Welcome(userID)
