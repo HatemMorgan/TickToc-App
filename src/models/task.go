@@ -25,7 +25,8 @@ type (
 	}
 	//TaskList represent task when querying the list of tasks
 	TaskList struct {
-		ID    bson.ObjectId `json:"id" bson:"_id"`
-		Title string        `json:"title" bson:"title"`
+		ID            bson.ObjectId `json:"id" bson:"_id"`
+		Title         string        `json:"title" bson:"title"`
+		StartDateTime time.Time     `json:"startDateTime" bson:"startDateTime"`
 	}
 )

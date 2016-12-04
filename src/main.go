@@ -19,7 +19,7 @@ func main() {
 	port := os.Getenv("PORT")
 	// Default to 3000 if no PORT environment variable was defined
 	if port == "" {
-		port = "4000"
+		port = "3333"
 	}
 	// Start the server
 	fmt.Printf("Listening on port %s...\n", port)
