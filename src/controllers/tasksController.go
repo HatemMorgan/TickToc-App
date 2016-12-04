@@ -150,7 +150,7 @@ func (taskController TaskController) ListTasks(id string) ([]models.TaskList, er
 	now := time.Now().UTC()
 
 	tasks := []models.TaskList{}
-	err := taskController.Session.DB("advanced_computer_lab").C("tasks").Find(bson.M{"userID": objectID, "endDateTime": bson.M{"$gte": now}}).Select(bson.M{"_id": 1, "title": 1}).All(&tasks)
+	err := taskController.Session.DB("advanced_computer_lab").C("tasks").Find(bson.M{"userID": objectID, "startDateTime": bson.M{"$gte": now}}).Select(bson.M{"_id": 1, "title": 1, "startDateTime": 1}).Sort("startDateTime").All(&tasks)
 
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get task with id: %s . %v", id, err)
