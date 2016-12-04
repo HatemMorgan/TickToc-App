@@ -173,12 +173,12 @@ func (ec EventController) UpdateEvent(calendarID, eventID string, newAttendees [
 		case "startDateTime":
 			event.Start = &calendar.EventDateTime{
 				DateTime: value,
-				TimeZone: "Egypt",
+				TimeZone: "Africa/Egypt",
 			}
 		case "endDateTime":
 			event.End = &calendar.EventDateTime{
 				DateTime: value,
-				TimeZone: "Egypt",
+				TimeZone: "Africa/Egypt",
 			}
 		case "location":
 			event.Location = value
@@ -242,13 +242,15 @@ func (ec EventController) ListEvents(calendarID string, token *oauth2.Token, sor
 	// 	events, err := srv.Events.List("primary").ShowDeleted(false).
 	// 		SingleEvents(true).TimeMin(t).MaxResults(10).OrderBy("startTime").Do()
 	result := &calendar.Events{}
+	fmt.Println("sort criteria -->", sortCriteria)
 	if sortCriteria == "" {
-		result, err = srv.Events.List(calendarID).Fields("items(created,id,summary)", "summary", "nextPageToken").TimeMin(t).
-			ShowDeleted(false).OrderBy("startTime").Do()
+		fmt.Println("heree")
+		result, err = srv.Events.List(calendarID).Fields("items(start,id,summary)", "summary", "nextPageToken").TimeMin(t).
+			SingleEvents(true).ShowDeleted(false).OrderBy("starttime").Do()
 
 	} else {
-		result, err = srv.Events.List(calendarID).Fields("items(created,id,summary)", "summary", "nextPageToken").TimeMin(t).
-			ShowDeleted(false).OrderBy(sortCriteria).Do()
+		result, err = srv.Events.List(calendarID).Fields("items(start,id,summary)", "summary", "nextPageToken").TimeMin(t).
+			SingleEvents(true).ShowDeleted(false).OrderBy(sortCriteria).Do()
 	}
 
 	if err != nil {
