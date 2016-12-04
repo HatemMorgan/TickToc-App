@@ -118,6 +118,19 @@ func HandleEventChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userController := controllers.NewUserController(db.GetSession())
+	_, err := userController.GetUser(userID)
+
+	if err != nil {
+		if err != nil {
+			newError := errorObj{Message: err.Error(), Resource: "Event Add chat"}
+			json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Bad Request", Status: http.StatusBadRequest}
+			writeJSON(w, json)
+			fmt.Println(err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
 	isAuthenticated := chatbot.CheckIfAuthenticated(uuid)
 	if !isAuthenticated {
 		// newError := errorObj{Message: "No session found for: " + uuid + " .", Resource: "Event Chat"}
@@ -224,6 +237,19 @@ func HandleTaskChat(w http.ResponseWriter, r *http.Request) {
 		})
 		fmt.Println("ID of User must be provided as a query parameter with key = id ex:(?id=userID)", http.StatusBadRequest)
 		return
+	}
+
+	userController := controllers.NewUserController(db.GetSession())
+	_, err := userController.GetUser(userID)
+
+	if err != nil {
+		if err != nil {
+			newError := errorObj{Message: err.Error(), Resource: "Task Add chat"}
+			json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Bad Request", Status: http.StatusBadRequest}
+			writeJSON(w, json)
+			fmt.Println(err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 
 	isAuthenticated := chatbot.CheckIfAuthenticated(uuid)
