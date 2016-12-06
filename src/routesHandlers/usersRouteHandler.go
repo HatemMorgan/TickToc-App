@@ -92,19 +92,19 @@ func insertUserHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err.Error(), http.StatusInternalServerError)
 		return
 	}
+	if user.CalendarID == "" {
+		eventController := controllers.NewEventController()
+		calendarID, err := eventController.CreateAdvancedLabCalendar(user.Token)
+		if err != nil {
+			newError := errorObj{Message: err.Error(), Resource: "Google Calendar"}
+			json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal Server Error", Status: http.StatusInternalServerError}
+			writeJSON(w, json)
+			fmt.Println(err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	eventController := controllers.NewEventController()
-	calendarID, err := eventController.CreateAdvancedLabCalendar(user.Token)
-	if err != nil {
-		newError := errorObj{Message: err.Error(), Resource: "Google Calendar"}
-		json := errorsJSONObj{Errors: []errorObj{newError}, Message: "Internal Server Error", Status: http.StatusInternalServerError}
-		writeJSON(w, json)
-		fmt.Println(err.Error(), http.StatusInternalServerError)
-		return
+		userController.UpdateUser(map[string]string{"CalenarID": calendarID}, userID)
 	}
-
-	userController.UpdateUser(map[string]string{"CalenarID": calendarID}, userID)
-
 	json := successJSONObj{Status: http.StatusCreated, Message: "user added successfully", Results: map[string]string{"userID": userID}}
 	writeJSON(w, json)
 }
