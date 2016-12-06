@@ -26,6 +26,11 @@ func NewUserController(s *mgo.Session) *UserController {
 
 //InsertUser is responsible to add new user to database
 func (userController UserController) InsertUser(newUser models.User, tokenCode string) (string, error) {
+	user := models.User{}
+	err := userController.Session.DB("advanced_computer_lab").C("users").Find(bson.M{"email": newUser.Email}).One(&user)
+	if err == nil {
+		return user.ID.Hex(), nil
+	}
 	// add an ID
 	newUser.ID = bson.NewObjectId()
 	token, err1 := calendarAuth.GetTokenToBeSaved(tokenCode)
@@ -34,7 +39,7 @@ func (userController UserController) InsertUser(newUser models.User, tokenCode s
 	}
 	newUser.Token = token
 	// Write the user to mongo
-	err := userController.Session.DB("advanced_computer_lab").C("users").Insert(newUser)
+	err = userController.Session.DB("advanced_computer_lab").C("users").Insert(newUser)
 	if err != nil {
 		return "", fmt.Errorf("Unable to add new Task . %v ", err)
 	}
